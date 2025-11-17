@@ -1,24 +1,144 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_72" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
+        <capability name="Map view configurations" minToolsVersion="14.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="collection view cell content view" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="GPS_Tracker" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="430" height="932"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" xcode11CocoaTouchSystemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pey-xq-TpX">
+                                <rect key="frame" x="0.0" y="226" width="430" height="706"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="430" id="ran-e7-euR"/>
+                                    <constraint firstAttribute="height" constant="706" id="vYH-lO-xHy"/>
+                                </constraints>
+                                <standardMapConfiguration key="preferredConfiguration"/>
+                            </mapView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Find Your Rat Dog" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="z5u-fS-SUi">
+                                <rect key="frame" x="146.66666666666666" y="66.666666666666671" width="136.99999999999997" height="20.333333333333329"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="20.329999999999998" id="gDC-QY-x2Q"/>
+                                    <constraint firstAttribute="width" constant="137" id="vr4-RP-vze"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="9KK-Ck-iDm">
+                                <rect key="frame" x="20" y="101" width="390" height="89"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="89" id="7ka-aO-T0y"/>
+                                    <constraint firstAttribute="width" constant="390" id="FYW-n3-IJE"/>
+                                </constraints>
+                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="B31-If-nHA">
+                                    <size key="itemSize" width="130" height="90"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cell" id="fX2-qL-GDq" customClass="inCell" customModule="GPS_Tracker" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="130" height="90"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="FAl-IE-VmA">
+                                            <rect key="frame" x="0.0" y="0.0" width="130" height="90"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Dog" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pAv-vT-64F">
+                                                    <rect key="frame" x="8" y="8" width="114" height="21"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" secondItem="pAv-vT-64F" secondAttribute="height" multiplier="38:7" id="0JK-hE-GdW"/>
+                                                        <constraint firstAttribute="width" constant="114" id="KTw-GD-yin"/>
+                                                        <constraint firstAttribute="height" constant="21" id="O11-q7-KdU"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Battery" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cop-NN-Iw2">
+                                                    <rect key="frame" x="8" y="35" width="114" height="21"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="114" id="7aM-Yz-49h"/>
+                                                        <constraint firstAttribute="width" secondItem="Cop-NN-Iw2" secondAttribute="height" multiplier="38:7" id="BIM-mQ-wGS"/>
+                                                        <constraint firstAttribute="height" constant="21" id="pPv-Q3-uj7"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Status" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nuo-Oe-TYp">
+                                                    <rect key="frame" x="8" y="64" width="114" height="21"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="114" id="LE6-0j-Kut"/>
+                                                        <constraint firstAttribute="width" secondItem="Nuo-Oe-TYp" secondAttribute="height" multiplier="38:7" id="Z7d-jP-Nor"/>
+                                                        <constraint firstAttribute="height" constant="21" id="icx-xH-EHl"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="Cop-NN-Iw2" firstAttribute="width" secondItem="pAv-vT-64F" secondAttribute="width" id="17p-3H-50j"/>
+                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="leading" secondItem="pAv-vT-64F" secondAttribute="leading" id="1Ey-BV-XrK"/>
+                                                <constraint firstItem="Cop-NN-Iw2" firstAttribute="height" secondItem="pAv-vT-64F" secondAttribute="height" id="IdS-me-1cp"/>
+                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="width" secondItem="pAv-vT-64F" secondAttribute="width" id="PRR-nK-hux"/>
+                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="leading" secondItem="FAl-IE-VmA" secondAttribute="leadingMargin" id="VkY-p9-VV4"/>
+                                                <constraint firstAttribute="bottom" secondItem="Nuo-Oe-TYp" secondAttribute="bottom" constant="5" id="h0q-UC-edx"/>
+                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="leading" secondItem="Cop-NN-Iw2" secondAttribute="leading" id="i3Y-h2-yKn"/>
+                                                <constraint firstItem="pAv-vT-64F" firstAttribute="top" secondItem="FAl-IE-VmA" secondAttribute="topMargin" id="m5K-f6-EOQ"/>
+                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="top" secondItem="Cop-NN-Iw2" secondAttribute="bottom" constant="8" id="tha-nG-5Lj"/>
+                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="height" secondItem="pAv-vT-64F" secondAttribute="height" id="vWm-Ne-X51"/>
+                                            </constraints>
+                                        </collectionViewCellContentView>
+                                        <size key="customSize" width="130" height="90"/>
+                                        <connections>
+                                            <outlet property="batter_percentage" destination="Cop-NN-Iw2" id="qXy-5h-mNI"/>
+                                            <outlet property="dog_name" destination="pAv-vT-64F" id="2Y3-Kj-3eS"/>
+                                            <outlet property="status" destination="Nuo-Oe-TYp" id="ers-7S-Afv"/>
+                                        </connections>
+                                    </collectionViewCell>
+                                </cells>
+                            </collectionView>
+                        </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="9KK-Ck-iDm" firstAttribute="centerX" secondItem="z5u-fS-SUi" secondAttribute="centerX" id="9lJ-l5-1F7"/>
+                            <constraint firstItem="9KK-Ck-iDm" firstAttribute="centerX" secondItem="pey-xq-TpX" secondAttribute="centerX" id="Jbl-uC-0GY"/>
+                            <constraint firstItem="pey-xq-TpX" firstAttribute="top" secondItem="9KK-Ck-iDm" secondAttribute="bottom" constant="36" id="hjk-qQ-P58"/>
+                            <constraint firstItem="9KK-Ck-iDm" firstAttribute="top" secondItem="z5u-fS-SUi" secondAttribute="bottom" constant="14" id="jGH-Pw-ICY"/>
+                            <constraint firstItem="9KK-Ck-iDm" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="101" id="qRm-0T-Ded"/>
+                            <constraint firstItem="9KK-Ck-iDm" firstAttribute="top" secondItem="z5u-fS-SUi" secondAttribute="bottom" constant="14" id="qUI-nL-WIa"/>
+                            <constraint firstItem="9KK-Ck-iDm" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="utd-LB-dEh"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="collectionView" destination="9KK-Ck-iDm" id="pbO-Ih-v5p"/>
+                        <outlet property="mapView" destination="pey-xq-TpX" id="eOf-77-D2I"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="12.55813953488372" y="-3.218884120171674"/>
         </scene>
     </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
 </document>

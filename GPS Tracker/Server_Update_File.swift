@@ -1,0 +1,84 @@
+//
+//  Server_Update_File.swift
+//  GPS Tracker
+//
+//  Created by Austin Baker on 14/11/2025.
+//
+
+import Foundation
+
+struct LocationResponse: Decodable {
+    let device_id: String
+    let lat: Double
+    let lng: Double
+    let bat: Double
+    let timestamp: String
+}
+
+class update_server_info {
+    private let baseURL = URL(string: "http://192.168.0.247:8000")!
+    
+    private func makeURL(path: String,
+                         queryItems: [URLQueryItem]? = nil) -> URL? {
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
+        components.path = path              // e.g. "/api/location/latest"
+        components.queryItems = queryItems  // e.g. device_id=...
+        return components.url
+    }
+    
+    func update_locations(d_id:String,completion: @escaping(LocationResponse?)->Void){
+        
+        let query: [URLQueryItem] = [
+            URLQueryItem(name: "device_id", value: d_id)
+        ]
+        guard let url = makeURL(path: "/api/location/latest", queryItems: query) 
+        else {
+        completion(nil)
+            return}
+                
+        URLSession.shared.dataTask(with: url){data, _, error in
+            guard let data = data, error == nil 
+            else{
+                completion(nil)
+                return
+            }
+            let json = try? JSONDecoder().decode(LocationResponse.self, from:data)
+            completion(json)
+        }.resume()
+    }
+    
+    func get_id(completion: @escaping([String]?)->Void){
+        guard let url = makeURL(path: "/api/device_id")
+        else {
+        completion(nil)
+            return}
+                
+        URLSession.shared.dataTask(with: url){data, _, error in
+            guard let data = data, error == nil
+            else{
+                completion(nil)
+                return
+            }
+            print(data)
+            let ids = try? JSONDecoder().decode([String].self, from:data)
+            completion(ids)
+        }.resume()
+    }
+    
+    func get_rows(completion: @escaping(Int)->Void){
+        guard let url = makeURL(path: "/api/dogs") else {
+            completion(0)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url){data, _, error in
+            guard let data = data, error == nil else {
+                completion(0)
+                return
+            }
+            let count = try? JSONDecoder().decode(Int.self, from: data)
+            completion(count!)
+        }.resume()
+    }
+    
+}
