@@ -13,24 +13,40 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var test_label:UILabel!
     @IBOutlet weak var collectionView:UICollectionView!
+    @IBOutlet weak var geoFenceDropDown:UIButton!
     
+    //used to draw points for geofencing
+    var drawingPoints: [CLLocationCoordinate2D] = []
+    
+    //used for personal location
     private let locationManager = CLLocationManager()
+    
+    //used to store the amount of dogs available
     var itemCount: Int = 0
+    
+    //api server update stuff
     let api = update_server_info()
     var timer:Timer?
     
+    //holds the dogs ids for string and to ask the database for different things
     var dogs_ids:[String] = []
+    
+    //holds the points for each dog made
     var dogAnnotations: [String: MKPointAnnotation] = [:]
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        mapView.mapType = .hybrid
+        mapView.layer.cornerRadius = 16
+        mapView.layer.masksToBounds = true
         //ask user for permission to use this info
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
-        //mapView.showsUserLocation = true
-        //mapView.userTrackingMode = .follow
+        mapView.showsUserLocation = true
+        mapView.userTrackingMode = .follow
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true){[weak self] _ in
             self?.updateLocation()
         }
@@ -38,13 +54,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         loadRowCount()
         collectionView.delegate = self
         collectionView.dataSource = self
-      
     }
     
     //handels the location of the user
     func locationManager(_ manager: CLLocationManager) {
         handleAuthChange(manager.authorizationStatus)
     }
+    
     private func handleAuthChange(_ status: CLAuthorizationStatus) {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:

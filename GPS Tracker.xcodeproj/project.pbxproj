@@ -18,6 +18,8 @@
 		3A6A2A4F2EC1C24F00DA6E48 /* GPS_TrackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6A2A4E2EC1C24F00DA6E48 /* GPS_TrackerUITests.swift */; };
 		3A6A2A512EC1C24F00DA6E48 /* GPS_TrackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6A2A502EC1C24F00DA6E48 /* GPS_TrackerUITestsLaunchTests.swift */; };
 		3A6A2A5E2EC6D79F00DA6E48 /* Server_Update_File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6A2A5D2EC6D79F00DA6E48 /* Server_Update_File.swift */; };
+		3A6A2A602ECD7BB100DA6E48 /* GeoFence_Popup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6A2A5F2ECD7BB100DA6E48 /* GeoFence_Popup.swift */; };
+		3A6A2A632ECD880D00DA6E48 /* DrawGeoFence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6A2A622ECD880D00DA6E48 /* DrawGeoFence.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +55,8 @@
 		3A6A2A4E2EC1C24F00DA6E48 /* GPS_TrackerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPS_TrackerUITests.swift; sourceTree = "<group>"; };
 		3A6A2A502EC1C24F00DA6E48 /* GPS_TrackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPS_TrackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		3A6A2A5D2EC6D79F00DA6E48 /* Server_Update_File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Server_Update_File.swift; sourceTree = "<group>"; };
+		3A6A2A5F2ECD7BB100DA6E48 /* GeoFence_Popup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoFence_Popup.swift; sourceTree = "<group>"; };
+		3A6A2A622ECD880D00DA6E48 /* DrawGeoFence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawGeoFence.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +111,8 @@
 				3A6A2A2C2EC1C24B00DA6E48 /* SceneDelegate.swift */,
 				3A6A2A2E2EC1C24B00DA6E48 /* ViewController.swift */,
 				3A6A2A5D2EC6D79F00DA6E48 /* Server_Update_File.swift */,
+				3A6A2A5F2ECD7BB100DA6E48 /* GeoFence_Popup.swift */,
+				3A6A2A622ECD880D00DA6E48 /* DrawGeoFence.swift */,
 				3A6A2A302EC1C24B00DA6E48 /* Main.storyboard */,
 				3A6A2A362EC1C24E00DA6E48 /* Assets.xcassets */,
 				3A6A2A382EC1C24E00DA6E48 /* LaunchScreen.storyboard */,
@@ -266,9 +272,11 @@
 			files = (
 				3A6A2A2F2EC1C24B00DA6E48 /* ViewController.swift in Sources */,
 				3A6A2A352EC1C24B00DA6E48 /* GPS_Tracker.xcdatamodeld in Sources */,
+				3A6A2A632ECD880D00DA6E48 /* DrawGeoFence.swift in Sources */,
 				3A6A2A2B2EC1C24B00DA6E48 /* AppDelegate.swift in Sources */,
 				3A6A2A2D2EC1C24B00DA6E48 /* SceneDelegate.swift in Sources */,
 				3A6A2A5E2EC6D79F00DA6E48 /* Server_Update_File.swift in Sources */,
+				3A6A2A602ECD7BB100DA6E48 /* GeoFence_Popup.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

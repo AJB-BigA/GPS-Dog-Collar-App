@@ -12,7 +12,14 @@ struct LocationResponse: Decodable {
     let lat: Double
     let lng: Double
     let bat: Double
+    let status: Bool
     let timestamp: String
+}
+
+struct GeoFenceResponse: Decodable{
+    let id : Int
+    let name: String
+    let points: [[Double]]
 }
 
 class update_server_info {
@@ -21,8 +28,8 @@ class update_server_info {
     private func makeURL(path: String,
                          queryItems: [URLQueryItem]? = nil) -> URL? {
         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
-        components.path = path              // e.g. "/api/location/latest"
-        components.queryItems = queryItems  // e.g. device_id=...
+        components.path = path
+        components.queryItems = queryItems
         return components.url
     }
     
@@ -67,6 +74,22 @@ class update_server_info {
     
     func get_rows(completion: @escaping(Int)->Void){
         guard let url = makeURL(path: "/api/dogs") else {
+            completion(0)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url){data, _, error in
+            guard let data = data, error == nil else {
+                completion(0)
+                return
+            }
+            let count = try? JSONDecoder().decode(Int.self, from: data)
+            completion(count!)
+        }.resume()
+    }
+    
+    func get_geoFence_rows(completion: @escaping(Int)->Void){
+        guard let url = makeURL(path: "/api/geoFence/rows") else {
             completion(0)
             return
         }

@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
-from sqlalchemy import create_engine, Column, Integer, String, Float, func,select
+from typing import Optional , List, Tuple
+from sqlalchemy import create_engine, Column, Integer, String, Float, func,select, Boolean, JSON
 from sqlalchemy.orm import sessionmaker, declarative_base
+from fastapi import Depends
 
 # ---------- DB SETUP ----------
 DATABASE_URL = "sqlite:///./gps.db"  # file in the current folder
@@ -22,8 +23,19 @@ class Location(Base):
     lng = Column(Float, nullable=False)
     bat = Column(Integer, nullable = False)
     timestamp = Column(String, nullable=False)
+    status = Column(Boolean, nullable = False)
+
+class GeoFence(Base):
+    __tablename__ = "geo_fence"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    points = Column(JSON, nullable=False)
+
+
 
 Base.metadata.create_all(bind=engine)
+
+
 
 # ---------- API MODELS ----------
 class LocationIn(BaseModel):
@@ -31,6 +43,7 @@ class LocationIn(BaseModel):
     lat: float
     lng: float
     bat: int
+    status : bool
     timestamp: Optional[str] = None  # allow server to fill in
 
 class LocationOut(BaseModel):
@@ -38,7 +51,18 @@ class LocationOut(BaseModel):
     lat: float
     lng: float
     bat: int
+    status: bool
     timestamp: str
+
+class GeoFenceIn(BaseModel):
+    name: str
+    points: List[Tuple[float, float]]
+
+
+class GeoFenceOut(BaseModel):
+    name: str
+    points: List[Tuple[float, float]]
+
 
 # ---------- FASTAPI ----------
 app = FastAPI(title="GPS Dog Collar API")
@@ -50,8 +74,7 @@ def get_db():
         yield db
     finally:
         db.close()
-
-from fastapi import Depends
+#posts v----------------------------------------------v
 
 @app.post("/api/location", response_model=LocationOut)
 def add_location(loc: LocationIn, db=Depends(get_db)):
@@ -64,6 +87,7 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
         lng=loc.lng,
         bat=loc.bat,
         timestamp=ts,
+        status = loc.status
     )
     db.add(db_obj)
     db.commit()
@@ -75,11 +99,37 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
         lng=db_obj.lng,
         bat=db_obj.bat,
         timestamp=db_obj.timestamp,
+        status = db_obj.status
     )
+
+
+
+@app.post("/api/geo_fence/new-fence/", response_model = GeoFenceOut)
+def add_new_fence(fence: GeoFenceIn, db=Depends(get_db)):
+    """Adds new geo fences to the database"""
+    db_obj = GeoFence(
+        id = fence.id,
+        name = fence.name,
+        points = fence.points
+    )
+
+    db.add(db_obj)
+    db.commit()
+    db.refresh(db_obj)
+
+    return GeoFenceOut(
+        id = db_obj.id,
+        name = db_obj.name,
+        points = db_obj.points
+    )
+
+
+
+#Getters v--------------------------------------v
 
 @app.get("/api/location/latest", response_model=LocationOut)
 def latest_location(device_id: str, db=Depends(get_db)):
-    # get latest location for this device
+    """get latest location for this device"""
     obj = (
         db.query(Location)
         .filter(Location.device_id == device_id)
@@ -95,17 +145,23 @@ def latest_location(device_id: str, db=Depends(get_db)):
         lng=obj.lng,
         bat=obj.bat,
         timestamp=obj.timestamp,
+        status = obj.status
     )
 
 @app.get("/api/dogs")
 def number_of_entrys(db=Depends(get_db)):
-    #returns number of entries (dogs)
+    """returns number of entries (dogs)"""
     return db.query(func.count(func.distinct(Location.device_id))).scalar()
     
 
-
 @app.get("/api/device_id")
 def get_id(db=Depends(get_db)):
+    """Gets the set ids of each device"""
     stmt = select(Location.device_id).distinct()
     result = db.execute(stmt).scalars().all()
     return result
+
+@app.get("/api/geoFence/rows")
+def geo_rows(db=Depends(get_db)):
+    """Returs the number of geo fences"""
+    return db.query(func.count(func.distinct(GeoFence.id))).scalar()
