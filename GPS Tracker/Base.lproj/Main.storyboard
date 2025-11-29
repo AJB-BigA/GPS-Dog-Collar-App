@@ -104,6 +104,30 @@
                                             <outlet property="status" destination="Nuo-Oe-TYp" id="ers-7S-Afv"/>
                                         </connections>
                                     </collectionViewCell>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cell2" id="AsT-q6-BkZ" customClass="inCell2" customModule="GPS_Tracker" customModuleProvider="target">
+                                        <rect key="frame" x="169" y="19" width="98" height="60"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="3nu-Hm-gIB">
+                                            <rect key="frame" x="0.0" y="0.0" width="98" height="60"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PfA-65-giz">
+                                                    <rect key="frame" x="15" y="13" width="75" height="35"/>
+                                                    <state key="normal" title="Button"/>
+                                                    <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                                </button>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="PfA-65-giz" firstAttribute="trailing" secondItem="3nu-Hm-gIB" secondAttribute="trailingMargin" id="LTS-82-MNa"/>
+                                                <constraint firstItem="PfA-65-giz" firstAttribute="centerY" secondItem="3nu-Hm-gIB" secondAttribute="centerY" id="NXk-p6-hZI"/>
+                                                <constraint firstItem="PfA-65-giz" firstAttribute="top" secondItem="3nu-Hm-gIB" secondAttribute="top" constant="13" id="uoA-7a-SaO"/>
+                                            </constraints>
+                                        </collectionViewCellContentView>
+                                        <size key="customSize" width="98" height="60"/>
+                                        <connections>
+                                            <outlet property="button" destination="PfA-65-giz" id="pTt-Dk-vvx"/>
+                                        </connections>
+                                    </collectionViewCell>
                                 </cells>
                             </collectionView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HTd-dd-PmO" userLabel="Geo Fence Drop Down">
@@ -114,16 +138,28 @@
                                     <segue destination="arA-oY-jIv" kind="show" id="oCu-AJ-pDp"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ro9-Jn-Cab">
+                                <rect key="frame" x="20" y="59" width="75" height="35"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                <connections>
+                                    <action selector="startDrawingGeoFence:" destination="BYZ-38-t0r" eventType="touchUpInside" id="MmD-OP-l6o"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="z5u-fS-SUi" firstAttribute="centerX" secondItem="pey-xq-TpX" secondAttribute="centerX" id="1aE-Qj-AZy"/>
                             <constraint firstItem="HTd-dd-PmO" firstAttribute="leading" secondItem="z5u-fS-SUi" secondAttribute="trailing" constant="55.333333333333371" id="7L0-fd-vGO"/>
+                            <constraint firstItem="z5u-fS-SUi" firstAttribute="leading" secondItem="ro9-Jn-Cab" secondAttribute="trailing" constant="51.666666666666629" id="91N-Mv-qAm"/>
                             <constraint firstItem="pey-xq-TpX" firstAttribute="top" secondItem="9KK-Ck-iDm" secondAttribute="bottom" constant="36" id="98f-Wn-qCn"/>
                             <constraint firstItem="pey-xq-TpX" firstAttribute="leading" secondItem="9KK-Ck-iDm" secondAttribute="leading" id="L4t-Hg-G5M"/>
+                            <constraint firstItem="ro9-Jn-Cab" firstAttribute="centerY" secondItem="z5u-fS-SUi" secondAttribute="centerY" id="UjM-9m-3H5"/>
+                            <constraint firstItem="ro9-Jn-Cab" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="W9q-uZ-Rvc"/>
                             <constraint firstItem="9KK-Ck-iDm" firstAttribute="top" secondItem="z5u-fS-SUi" secondAttribute="bottom" constant="13.999999999999986" id="X2F-Xg-LCq"/>
                             <constraint firstItem="z5u-fS-SUi" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="7.6666666666666856" id="X7s-dV-Kd3"/>
+                            <constraint firstItem="ro9-Jn-Cab" firstAttribute="leading" secondItem="9KK-Ck-iDm" secondAttribute="leading" id="csm-u0-MTf"/>
                             <constraint firstItem="z5u-fS-SUi" firstAttribute="centerX" secondItem="9KK-Ck-iDm" secondAttribute="centerX" id="hfH-Cl-lMQ"/>
                             <constraint firstItem="z5u-fS-SUi" firstAttribute="centerY" secondItem="HTd-dd-PmO" secondAttribute="centerY" id="waz-lz-4fI"/>
                             <constraint firstItem="z5u-fS-SUi" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="zqr-kE-Glr"/>
@@ -132,11 +168,12 @@
                     <connections>
                         <outlet property="collectionView" destination="9KK-Ck-iDm" id="pbO-Ih-v5p"/>
                         <outlet property="mapView" destination="pey-xq-TpX" id="eOf-77-D2I"/>
+                        <outlet property="startDraw" destination="ro9-Jn-Cab" id="gqT-Gh-ITF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="12.55813953488372" y="-3.218884120171674"/>
+            <point key="canvasLocation" x="-43.255813953488371" y="-44.420600858369099"/>
         </scene>
         <!--Pop Up View Controller-->
         <scene sceneID="rMK-xC-VAd">

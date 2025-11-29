@@ -19,9 +19,6 @@ class PopUpViewController: UIViewController, UITableViewDataSource, UITableViewD
         geoFence.dataSource = self
     }
     
-    
-    
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return 1
     }
@@ -31,7 +28,6 @@ class PopUpViewController: UIViewController, UITableViewDataSource, UITableViewD
         cell.geoFenceName.text = "Around house"
         return cell
     }
-    
 }
 
 class geoFenceInCell:UITableViewCell {

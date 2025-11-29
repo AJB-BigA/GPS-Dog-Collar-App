@@ -1,7 +1,7 @@
 import time
 import requests
 
-BASE_URL = "http://192.168.0.247:8000"   # <-- change if your server IP/port is different
+BASE_URL = "https://api.249dogs.uk"   # <-- change if your server IP/port is different
 
 def send_update(lat, lon,device_id="Xina"):
     try:

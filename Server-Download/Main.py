@@ -31,11 +31,7 @@ class GeoFence(Base):
     name = Column(String, index=True)
     points = Column(JSON, nullable=False)
 
-
-
 Base.metadata.create_all(bind=engine)
-
-
 
 # ---------- API MODELS ----------
 class LocationIn(BaseModel):
@@ -103,7 +99,6 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
     )
 
 
-
 @app.post("/api/geo_fence/new-fence/", response_model = GeoFenceOut)
 def add_new_fence(fence: GeoFenceIn, db=Depends(get_db)):
     """Adds new geo fences to the database"""
@@ -122,9 +117,6 @@ def add_new_fence(fence: GeoFenceIn, db=Depends(get_db)):
         name = db_obj.name,
         points = db_obj.points
     )
-
-
-
 #Getters v--------------------------------------v
 
 @app.get("/api/location/latest", response_model=LocationOut)
@@ -152,7 +144,6 @@ def latest_location(device_id: str, db=Depends(get_db)):
 def number_of_entrys(db=Depends(get_db)):
     """returns number of entries (dogs)"""
     return db.query(func.count(func.distinct(Location.device_id))).scalar()
-    
 
 @app.get("/api/device_id")
 def get_id(db=Depends(get_db)):

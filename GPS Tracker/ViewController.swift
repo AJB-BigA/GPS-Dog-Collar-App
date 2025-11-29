@@ -14,6 +14,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     @IBOutlet weak var test_label:UILabel!
     @IBOutlet weak var collectionView:UICollectionView!
     @IBOutlet weak var geoFenceDropDown:UIButton!
+    @IBOutlet weak var startDraw:UIButton!
     
     //used to draw points for geofencing
     var drawingPoints: [CLLocationCoordinate2D] = []
@@ -24,6 +25,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     //used to store the amount of dogs available
     var itemCount: Int = 0
     
+    //when to draw button is clickec
+    var drawMode = false
+    
     //api server update stuff
     let api = update_server_info()
     var timer:Timer?
@@ -33,6 +37,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     //holds the points for each dog made
     var dogAnnotations: [String: MKPointAnnotation] = [:]
+    
+    var currentPoints: [CLLocationCoordinate2D] = []
+    
+    var exclusionZones: [MKPolygon] = []
     
     
     override func viewDidLoad() {
@@ -55,6 +63,75 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         collectionView.delegate = self
         collectionView.dataSource = self
     }
+    
+    @objc func handleMapTap(_ gesture: UITapGestureRecognizer) {
+        let point = gesture.location(in: mapView)
+        let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
+        currentPoints.append(coordinate)
+        redrawCurrentLine()
+    }
+    
+    func redrawCurrentLine() {
+        // Remove any temporary polylines
+        let tempLines = mapView.overlays.filter { $0 is MKPolyline }
+        mapView.removeOverlays(tempLines)
+        
+        guard currentPoints.count > 1 else { return }
+        
+        let polyline = MKPolyline(coordinates: currentPoints, count: currentPoints.count)
+        mapView.addOverlay(polyline)
+    }
+    
+    @IBAction func startDrawingGeoFence(_ sender:Any){
+        self.mapView.delegate = self
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleMapTap(_:)))
+        self.mapView.addGestureRecognizer(tap)
+        drawMode = true
+        self.collectionView.reloadData()
+        
+    }
+    // Call this when user presses “Finish zone”
+    @IBAction func finishZoneTapped(_ sender: Any) {
+        guard currentPoints.count > 2 else { return }  // need at least triangle
+        
+        let polygon = MKPolygon(coordinates: currentPoints, count: currentPoints.count)
+        exclusionZones.append(polygon)
+        
+        // Clear temporary line
+        let tempLines = mapView.overlays.filter { $0 is MKPolyline }
+        mapView.removeOverlays(tempLines)
+        
+        mapView.addOverlay(polygon)
+        currentPoints.removeAll()
+    }
+    
+    // Optional: button to clear everything
+    @IBAction func clearZonesTapped(_ sender: Any) {
+        currentPoints.removeAll()
+        exclusionZones.removeAll()
+        mapView.removeOverlays(mapView.overlays)
+    }
+    
+    //draw lines
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if let polyline = overlay as? MKPolyline {
+            let renderer = MKPolylineRenderer(polyline: polyline)
+            renderer.lineWidth = 3
+            renderer.strokeColor = UIColor.systemBlue
+            return renderer
+        }
+        
+        if let polygon = overlay as? MKPolygon {
+            let renderer = MKPolygonRenderer(polygon: polygon)
+            renderer.lineWidth = 2
+            renderer.strokeColor = UIColor.systemRed
+            renderer.fillColor = UIColor.systemRed.withAlphaComponent(0.2)
+            return renderer
+        }
+        
+        return MKOverlayRenderer(overlay: overlay)
+    }
+    
     
     //handels the location of the user
     func locationManager(_ manager: CLLocationManager) {
@@ -121,13 +198,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     func loadRowCount(){
         api.get_rows { [weak self] count in
-                   guard let self = self else { return }
-                   self.itemCount = count
-                    print(count)
-                   DispatchQueue.main.async {
-                       self.collectionView.reloadData()
-                   }
-               }
+            guard let self = self else { return }
+            self.itemCount = count
+            print(count)
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
+        }
     }
     
     func loadIds(){
@@ -141,16 +218,30 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     }
     //loads the dogs info into a tables
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return itemCount
+        switch drawMode{
+        case true: return 3
+            
+        case false : return itemCount
+            
+        }
+  
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! inCell
-        cell.dog_name.text = dogs_ids[indexPath.row]
-        cell.batter_percentage.text = String("Nill")
-        cell.status.text = "idk bro"
-        return cell
+        switch drawMode{
+        case true:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell2", for: indexPath) as! inCell2
+            cell.button.titleLabel?.text = String(indexPath.row)
+            return cell
+            
+        case false:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! inCell
+            cell.dog_name.text = dogs_ids[indexPath.row]
+            cell.batter_percentage.text = String("Nill")
+            cell.status.text = "idk bro"
+            return cell
+        }
     }
 }
 
@@ -158,5 +249,9 @@ class inCell:UICollectionViewCell{
     @IBOutlet weak var dog_name: UILabel!
     @IBOutlet weak var  batter_percentage: UILabel!
     @IBOutlet weak var status: UILabel!
+}
+
+class inCell2:UICollectionViewCell{
+    @IBOutlet weak var button: UIButton!
 }
 

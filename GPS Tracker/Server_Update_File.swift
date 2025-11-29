@@ -23,7 +23,7 @@ struct GeoFenceResponse: Decodable{
 }
 
 class update_server_info {
-    private let baseURL = URL(string: "http://192.168.0.247:8000")!
+    private let baseURL = URL(string: "https://api.249dogs.uk")!
     
     private func makeURL(path: String,
                          queryItems: [URLQueryItem]? = nil) -> URL? {
