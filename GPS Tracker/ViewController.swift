@@ -27,6 +27,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     //when to draw button is clickec
     var drawMode = false
+    var drawButtonNames = ["Save", "Cancel", "Clear"]
     
     //api server update stuff
     let api = update_server_info()
@@ -88,29 +89,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         self.mapView.addGestureRecognizer(tap)
         drawMode = true
         self.collectionView.reloadData()
-        
-    }
-    // Call this when user presses “Finish zone”
-    @IBAction func finishZoneTapped(_ sender: Any) {
-        guard currentPoints.count > 2 else { return }  // need at least triangle
-        
-        let polygon = MKPolygon(coordinates: currentPoints, count: currentPoints.count)
-        exclusionZones.append(polygon)
-        
-        // Clear temporary line
-        let tempLines = mapView.overlays.filter { $0 is MKPolyline }
-        mapView.removeOverlays(tempLines)
-        
-        mapView.addOverlay(polygon)
-        currentPoints.removeAll()
     }
     
-    // Optional: button to clear everything
-    @IBAction func clearZonesTapped(_ sender: Any) {
-        currentPoints.removeAll()
-        exclusionZones.removeAll()
-        mapView.removeOverlays(mapView.overlays)
-    }
     
     //draw lines
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -232,7 +212,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         switch drawMode{
         case true:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell2", for: indexPath) as! inCell2
-            cell.button.titleLabel?.text = String(indexPath.row)
+            cell.setInt(i: indexPath.row)
+            cell.button.titleLabel?.text = drawButtonNames[indexPath.row]
             return cell
             
         case false:
@@ -244,6 +225,33 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         }
     }
 }
+extension ViewController:buttonControl{
+    func stopDrawingGeoFence(){
+        self.mapView.delegate = nil
+        drawMode = false
+        collectionView.reloadData()
+    }
+    func finishZoneTapped() {
+        guard currentPoints.count > 2 else { return }  // need at least triangle
+        
+        let polygon = MKPolygon(coordinates: currentPoints, count: currentPoints.count)
+        exclusionZones.append(polygon)
+        
+        // Clear temporary line
+        let tempLines = mapView.overlays.filter { $0 is MKPolyline }
+        mapView.removeOverlays(tempLines)
+        
+        mapView.addOverlay(polygon)
+        currentPoints.removeAll()
+        stopDrawingGeoFence()
+    }
+    
+    func clearZonesTapped() {
+        currentPoints.removeAll()
+        exclusionZones.removeAll()
+        mapView.removeOverlays(mapView.overlays)
+    }
+}
 
 class inCell:UICollectionViewCell{
     @IBOutlet weak var dog_name: UILabel!
@@ -251,7 +259,34 @@ class inCell:UICollectionViewCell{
     @IBOutlet weak var status: UILabel!
 }
 
-class inCell2:UICollectionViewCell{
-    @IBOutlet weak var button: UIButton!
+protocol buttonControl:AnyObject{
+    func finishZoneTapped()
+    func clearZonesTapped()
+    func stopDrawingGeoFence()
 }
 
+class inCell2:UICollectionViewCell{
+    weak var delegate: buttonControl?
+    @IBOutlet weak var button: UIButton!
+    
+    var num = Int()
+    
+    func setInt(i:Int){
+        num = i
+    }
+    
+    @IBAction func didClick(_ sender: Any){
+        switch num{
+        case 0:
+            delegate?.finishZoneTapped()
+        case 1:
+            delegate?.clearZonesTapped()
+        case 2:
+            delegate?.stopDrawingGeoFence()
+        default:
+            return
+        }
+        
+    }
+    
+}

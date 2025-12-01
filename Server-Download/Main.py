@@ -98,7 +98,6 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
         status = db_obj.status
     )
 
-
 @app.post("/api/geo_fence/new-fence/", response_model = GeoFenceOut)
 def add_new_fence(fence: GeoFenceIn, db=Depends(get_db)):
     """Adds new geo fences to the database"""
