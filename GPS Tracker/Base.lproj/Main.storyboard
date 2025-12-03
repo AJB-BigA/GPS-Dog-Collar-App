@@ -240,9 +240,6 @@
                                     <imageReference key="image" image="plus.rectangle.fill" catalog="system" symbolScale="large"/>
                                     <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" scale="large" weight="heavy"/>
                                 </buttonConfiguration>
-                                <connections>
-                                    <segue destination="gXr-LQ-UGN" kind="show" id="dPV-hm-LVN"/>
-                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="hu5-kr-L09"/>
@@ -256,70 +253,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="RID-Dg-bx9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="884.65116279069764" y="-3.218884120171674"/>
-        </scene>
-        <!--Geo Fence View Controller-->
-        <scene sceneID="gtN-jU-fiJ">
-            <objects>
-                <viewController id="gXr-LQ-UGN" customClass="GeoFenceViewController" customModule="GPS_Tracker" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="fKg-Mb-rtP">
-                        <rect key="frame" x="0.0" y="0.0" width="430" height="922"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rCM-jf-peY">
-                                <rect key="frame" x="20" y="96" width="390" height="806"/>
-                                <standardMapConfiguration key="preferredConfiguration"/>
-                            </mapView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Q6Q-Jo-FKW">
-                                <rect key="frame" x="19" y="53" width="152" height="35"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="152" id="Hlt-RM-zDe"/>
-                                </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Save"/>
-                                <connections>
-                                    <action selector="finishZoneTapped:" destination="gXr-LQ-UGN" eventType="touchUpInside" id="HyF-iR-ig2"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="srP-ah-52h">
-                                <rect key="frame" x="283" y="53" width="127" height="35"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="127" id="Jes-Fe-Ebc"/>
-                                </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Return"/>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3Ic-1G-VgT">
-                                <rect key="frame" x="184" y="53" width="64" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Clear"/>
-                                <connections>
-                                    <action selector="clearZonesTapped:" destination="gXr-LQ-UGN" eventType="touchUpInside" id="dgb-9Z-HyO"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="aWM-51-fCL"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="rCM-jf-peY" firstAttribute="top" secondItem="Q6Q-Jo-FKW" secondAttribute="bottom" constant="8" id="8Hg-Ps-JTJ"/>
-                            <constraint firstItem="rCM-jf-peY" firstAttribute="leading" secondItem="fKg-Mb-rtP" secondAttribute="leadingMargin" id="F3C-zG-E3l"/>
-                            <constraint firstItem="srP-ah-52h" firstAttribute="trailing" secondItem="fKg-Mb-rtP" secondAttribute="trailingMargin" id="OJg-l0-9SU"/>
-                            <constraint firstItem="Q6Q-Jo-FKW" firstAttribute="top" secondItem="aWM-51-fCL" secondAttribute="top" constant="53" id="Pnr-Zb-rgn"/>
-                            <constraint firstItem="srP-ah-52h" firstAttribute="trailing" secondItem="rCM-jf-peY" secondAttribute="trailing" id="UDp-zN-Rbv"/>
-                            <constraint firstItem="Q6Q-Jo-FKW" firstAttribute="baseline" secondItem="srP-ah-52h" secondAttribute="baseline" id="Y35-aZ-tJQ"/>
-                            <constraint firstItem="aWM-51-fCL" firstAttribute="bottom" secondItem="rCM-jf-peY" secondAttribute="bottom" constant="20" id="xmb-2z-CUV"/>
-                            <constraint firstItem="Q6Q-Jo-FKW" firstAttribute="leading" secondItem="aWM-51-fCL" secondAttribute="leading" constant="19" id="z9T-Mk-M0g"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" id="1or-6G-apw"/>
-                    <connections>
-                        <outlet property="cancelButton" destination="fKg-Mb-rtP" id="wDh-9o-SkA"/>
-                        <outlet property="mapView" destination="rCM-jf-peY" id="yBk-MW-9Nh"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="PGm-Xd-w1Y" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="884.65116279069764" y="-748.0686695278971"/>
         </scene>
     </scenes>
     <resources>
