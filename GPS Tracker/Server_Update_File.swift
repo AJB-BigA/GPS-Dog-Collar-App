@@ -103,5 +103,4 @@ class update_server_info {
             completion(count!)
         }.resume()
     }
-    
 }

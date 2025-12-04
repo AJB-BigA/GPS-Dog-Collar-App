@@ -56,15 +56,11 @@ need to check the second output
 it will be 1 or 0
 */
 bool checkIfSatLock(const String& s){
-    int i = 0;
-    while (s[i] != ','){
-        i++;
-    }
-    i++;
-    if(s[i] == '0'){
+    int i = s.indexOf(',');
+    if( i < 0 || i + 1 >= s.length()){
         return false;
-    }else {
-        return true;
+    }
+    return (s[i+1] == '1');
     }
 }
 /*
@@ -80,7 +76,7 @@ String createPayload(const String& lat, const String& lng, const String& bat, bo
     payload += "\"lat\":"+lat+",";
     payload += "\"lng\":"+lng+",";
     payload += "\"bat\":"+bat+",";
-    payload += "\"status\":"+String(status? "true":"flase")+"";
+    payload += "\"status\":"+String(status? "true":"false")+"";
     payload += "}";
     return payload;
 }
@@ -90,7 +86,7 @@ parm -> String : Payload
 return -> void
 sends the packet to the server 
 */
-void sendPacket(const String& payload, WiFiClientSecure& wifi, HttpClient& client){
+void sendPacket(const String& payload, HttpClient& client){
     wifi.setInsecure();
     String path = "/api/location";
     client.beginRequest();
@@ -108,7 +104,7 @@ return -> String : battery percentage
 */
 String formatBattery(String& s){ 
     String battery; 
-    size_t pos = s.indexOf(',');
+    int pos = s.indexOf(',');
     if (pos < 0 || pos + 1 >= s.length()) {
         return "-1";   // malformed line
     }

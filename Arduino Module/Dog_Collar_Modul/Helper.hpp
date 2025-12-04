@@ -18,7 +18,7 @@
 std::pair<String,String> getLatAndLng(const String& s);
 bool checkIfSatLock(const String& s);
 String createPayload(const String& lat, const String& lng, const String& bat, bool status);
-void sendPacket(const String& payload, WiFiClientSecure& wifi, HttpClient& client);
+void sendPacket(const String& payload, HttpClient& client);
 String formatBattery(String&);
 
 #endif /* Helper_hpp */
