@@ -8,12 +8,17 @@
 import UIKit
 import MapKit
 
+struct dogData{
+    let bat: Double
+    let status: Bool
+}
+
 class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var test_label:UILabel!
     @IBOutlet weak var collectionView:UICollectionView!
     @IBOutlet weak var geoFenceDropDown:UIButton!
+    @IBOutlet weak var AppNameLabel: UILabel!
     @IBOutlet weak var startDraw:UIButton!
     
     //used to draw points for geofencing
@@ -27,7 +32,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     //when to draw button is clickec
     var drawMode = false
-    var drawButtonNames = ["Save", "Cancel", "Clear"]
+    var drawButtonNames = ["Save", "Cancel", "Reset"]
     
     //api server update stuff
     let api = update_server_info()
@@ -36,17 +41,45 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     //holds the dogs ids for string and to ask the database for different things
     var dogs_ids:[String] = []
     
+    var dogs_data:[String : dogData] = [:]
+    
     //holds the points for each dog made
     var dogAnnotations: [String: MKPointAnnotation] = [:]
     
     var currentPoints: [CLLocationCoordinate2D] = []
     
     var exclusionZones: [MKPolygon] = []
-    
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        startDraw.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        geoFenceDropDown.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            startDraw.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            startDraw.centerXAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
+            startDraw.widthAnchor.constraint(equalToConstant: 150),
+            startDraw.heightAnchor.constraint(equalToConstant: 20),
+            
+            geoFenceDropDown.topAnchor.constraint(equalTo:  view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            geoFenceDropDown.centerXAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
+            geoFenceDropDown.widthAnchor.constraint(equalToConstant: 150),
+            geoFenceDropDown.heightAnchor.constraint(equalToConstant: 44),
+            
+            collectionView.topAnchor.constraint(equalTo: startDraw.bottomAnchor, constant: 20),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            collectionView.heightAnchor.constraint(equalToConstant: 90),
+
+            mapView.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 50),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            mapView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.60)
+             
+
+         ])
         mapView.mapType = .hybrid
         mapView.layer.cornerRadius = 16
         mapView.layer.masksToBounds = true
@@ -56,13 +89,20 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         locationManager.requestWhenInUseAuthorization()
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .follow
-        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true){[weak self] _ in
-            self?.updateLocation()
-        }
         loadIds()
         loadRowCount()
+        updateData()
         collectionView.delegate = self
         collectionView.dataSource = self
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 45.0, repeats: true){[weak self] _ in
+            self?.updateTimer()
+        }
+    }
+    
+    func updateTimer(){
+        self.updateData()
+        self.collectionView.reloadData()
     }
     
     @objc func handleMapTap(_ gesture: UITapGestureRecognizer) {
@@ -71,7 +111,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         currentPoints.append(coordinate)
         redrawCurrentLine()
     }
-    
     func redrawCurrentLine() {
         // Remove any temporary polylines
         let tempLines = mapView.overlays.filter { $0 is MKPolyline }
@@ -108,7 +147,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             renderer.fillColor = UIColor.systemRed.withAlphaComponent(0.2)
             return renderer
         }
-        
         return MKOverlayRenderer(overlay: overlay)
     }
     
@@ -150,7 +188,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         }
     }
     //updates the collars location
-    func updateLocation(){
+    func updateData(){
         for id in dogs_ids{
             api.update_locations(d_id: id){[weak self] location in
                 guard let self = self,
@@ -158,6 +196,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                       let lat = location?.lat,
                       let lng = location?.lng
                 else {return}
+                let dd = dogData(
+                        bat : location?.bat ?? 0.0,
+                        status: location?.status ?? true)
+                
+                dogs_data[id] = dd
                 let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
                 
                 DispatchQueue.main.async {
@@ -171,16 +214,17 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                         self.mapView.addAnnotation(annotion)
                         self.dogAnnotations[id] = annotion
                     }
+                    self.collectionView.reloadData()
                 }
             }
         }
+       
     }
     
     func loadRowCount(){
         api.get_rows { [weak self] count in
             guard let self = self else { return }
             self.itemCount = count
-            print(count)
             DispatchQueue.main.async {
                 self.collectionView.reloadData()
             }
@@ -202,9 +246,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         case true: return 3
             
         case false : return itemCount
-            
         }
-  
+    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        switch drawMode {
+        case true:
+            return CGSize(width: 100, height: 50) // Size for buttons
+        case false:
+            return CGSize(width: 150, height: 100) // Size for dog cells
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -213,14 +263,21 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         case true:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell2", for: indexPath) as! inCell2
             cell.setInt(i: indexPath.row)
-            cell.button.titleLabel?.text = drawButtonNames[indexPath.row]
+            cell.button.setTitle(drawButtonNames[indexPath.row], for: .normal)
+            cell.delegate = self
+            
             return cell
             
         case false:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! inCell
-            cell.dog_name.text = dogs_ids[indexPath.row]
-            cell.batter_percentage.text = String("Nill")
-            cell.status.text = "idk bro"
+            let id = dogs_ids[indexPath.row]
+            
+            if let data = dogs_data[id]{
+                cell.dog_name.text = id
+                cell.batter_percentage.text = "\(data.bat)%"
+                cell.status.text = data.status ? "Connected To Wifi" : "Using Sim Data"
+            }
+
             return cell
         }
     }
@@ -229,8 +286,10 @@ extension ViewController:buttonControl{
     func stopDrawingGeoFence(){
         self.mapView.delegate = nil
         drawMode = false
+        currentPoints.removeAll()
         collectionView.reloadData()
     }
+    
     func finishZoneTapped() {
         guard currentPoints.count > 2 else { return }  // need at least triangle
         
@@ -249,6 +308,7 @@ extension ViewController:buttonControl{
     func clearZonesTapped() {
         currentPoints.removeAll()
         exclusionZones.removeAll()
+        currentPoints.removeAll()
         mapView.removeOverlays(mapView.overlays)
     }
 }
@@ -257,7 +317,39 @@ class inCell:UICollectionViewCell{
     @IBOutlet weak var dog_name: UILabel!
     @IBOutlet weak var  batter_percentage: UILabel!
     @IBOutlet weak var status: UILabel!
-}
+    
+    override func awakeFromNib(){
+        super.awakeFromNib()
+        dog_name.translatesAutoresizingMaskIntoConstraints = false
+        batter_percentage.translatesAutoresizingMaskIntoConstraints = false
+        status.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+        dog_name.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+        dog_name.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+        dog_name.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+        
+        batter_percentage.topAnchor.constraint(equalTo: dog_name.bottomAnchor, constant: 4),
+        batter_percentage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+        batter_percentage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+        
+        status.topAnchor.constraint(equalTo: batter_percentage.bottomAnchor, constant: 4),
+        status.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+        status.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+        status.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)])
+    
+        contentView.backgroundColor = .systemGray6
+        contentView.layer.cornerRadius = 12
+        contentView.layer.masksToBounds = true
+        
+
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        layer.shadowRadius = 4
+        layer.shadowOpacity = 0.1
+        layer.masksToBounds = false
+        }
+    }
 
 protocol buttonControl:AnyObject{
     func finishZoneTapped()
@@ -269,6 +361,19 @@ class inCell2:UICollectionViewCell{
     weak var delegate: buttonControl?
     @IBOutlet weak var button: UIButton!
     
+    override func awakeFromNib(){
+        super.awakeFromNib()
+        contentView.backgroundColor = .systemGray6
+        contentView.layer.cornerRadius = 12
+        contentView.layer.masksToBounds = true
+        
+
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        layer.shadowRadius = 4
+        layer.shadowOpacity = 0.1
+        layer.masksToBounds = false
+    }
     var num = Int()
     
     func setInt(i:Int){
@@ -280,9 +385,9 @@ class inCell2:UICollectionViewCell{
         case 0:
             delegate?.finishZoneTapped()
         case 1:
-            delegate?.clearZonesTapped()
-        case 2:
             delegate?.stopDrawingGeoFence()
+        case 2:
+            delegate?.clearZonesTapped()
         default:
             return
         }

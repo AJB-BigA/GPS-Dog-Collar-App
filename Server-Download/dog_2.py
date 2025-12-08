@@ -11,8 +11,9 @@ def send_update(lat, lon,device_id="Xina"):
             "lat": lat,
             "lng": lon,       # <-- use lng to match the model
             "bat" : 98,
+            "status" : False,
             "timestamp": None # let server fill it
-        }
+        } # let server fill it
         resp = requests.post(
             f"{BASE_URL}/api/location",
             json=payload,

@@ -83,8 +83,8 @@ class update_server_info {
                 completion(0)
                 return
             }
-            let count = try? JSONDecoder().decode(Int.self, from: data)
-            completion(count!)
+            let count = (try? JSONDecoder().decode(Int.self, from: data)) ?? 0
+            completion(count)
         }.resume()
     }
     

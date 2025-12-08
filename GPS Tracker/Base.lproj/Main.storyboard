@@ -19,32 +19,28 @@
                         <rect key="frame" x="0.0" y="0.0" width="430" height="932"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pey-xq-TpX">
-                                <rect key="frame" x="20" y="226" width="390" height="585"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="pey-xq-TpX" secondAttribute="height" multiplier="1:1.5" id="D8x-h8-kaB"/>
-                                </constraints>
-                                <standardMapConfiguration key="preferredConfiguration"/>
-                            </mapView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Find Your Rat Dog" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="z5u-fS-SUi">
-                                <rect key="frame" x="146.66666666666666" y="66.666666666666671" width="136.99999999999997" height="20.333333333333329"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="20.329999999999998" id="gDC-QY-x2Q"/>
-                                    <constraint firstAttribute="width" constant="137" id="vr4-RP-vze"/>
-                                </constraints>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Find Your Rat Dog" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="z5u-fS-SUi">
+                                <rect key="frame" x="116" y="66" width="136" height="20.333333333333329"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="9KK-Ck-iDm">
-                                <rect key="frame" x="20" y="101" width="390" height="89"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ro9-Jn-Cab">
+                                <rect key="frame" x="20" y="55" width="75" height="34.333333333333343"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                <connections>
+                                    <action selector="startDrawingGeoFence:" destination="BYZ-38-t0r" eventType="touchUpInside" id="MmD-OP-l6o"/>
+                                </connections>
+                            </button>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="9KK-Ck-iDm">
+                                <rect key="frame" x="10" y="94.333333333333329" width="410" height="0.0"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="89" id="7ka-aO-T0y"/>
-                                    <constraint firstAttribute="width" constant="390" id="FYW-n3-IJE"/>
-                                </constraints>
                                 <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="B31-If-nHA">
-                                    <size key="itemSize" width="159" height="98"/>
+                                    <size key="itemSize" width="160" height="100"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -53,127 +49,94 @@
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cell" id="fX2-qL-GDq" customClass="inCell" customModule="GPS_Tracker" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="159" height="98"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="FAl-IE-VmA">
+                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" id="FAl-IE-VmA">
                                             <rect key="frame" x="0.0" y="0.0" width="159" height="98"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Dog" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pAv-vT-64F">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Dog" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pAv-vT-64F">
                                                     <rect key="frame" x="8" y="8" width="114" height="29"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Battery" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cop-NN-Iw2">
-                                                    <rect key="frame" x="8" y="43" width="114" height="21"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="114" id="7aM-Yz-49h"/>
-                                                        <constraint firstAttribute="width" secondItem="Cop-NN-Iw2" secondAttribute="height" multiplier="38:7" id="BIM-mQ-wGS"/>
-                                                        <constraint firstAttribute="height" constant="21" id="pPv-Q3-uj7"/>
-                                                    </constraints>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Status" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nuo-Oe-TYp">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Status" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nuo-Oe-TYp">
                                                     <rect key="frame" x="8" y="72" width="114" height="21"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="114" id="LE6-0j-Kut"/>
-                                                        <constraint firstAttribute="width" secondItem="Nuo-Oe-TYp" secondAttribute="height" multiplier="38:7" id="Z7d-jP-Nor"/>
-                                                        <constraint firstAttribute="height" constant="21" id="icx-xH-EHl"/>
-                                                    </constraints>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Battery" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cop-NN-Iw2">
+                                                    <rect key="frame" x="7" y="39" width="114" height="21"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
-                                            <constraints>
-                                                <constraint firstItem="Cop-NN-Iw2" firstAttribute="top" secondItem="pAv-vT-64F" secondAttribute="bottom" constant="6" id="3g6-xG-3Fk"/>
-                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="trailing" secondItem="pAv-vT-64F" secondAttribute="trailing" id="7Cj-6d-agu"/>
-                                                <constraint firstAttribute="bottom" secondItem="Nuo-Oe-TYp" secondAttribute="bottom" constant="5" id="9sz-66-aVs"/>
-                                                <constraint firstItem="pAv-vT-64F" firstAttribute="top" secondItem="FAl-IE-VmA" secondAttribute="topMargin" id="TVn-Td-ucU"/>
-                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="leading" secondItem="pAv-vT-64F" secondAttribute="leading" id="XGh-Z8-5wb"/>
-                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="top" secondItem="Cop-NN-Iw2" secondAttribute="bottom" constant="8" id="iFM-Hl-TmL"/>
-                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="leading" secondItem="Cop-NN-Iw2" secondAttribute="leading" id="mAs-0z-BFA"/>
-                                                <constraint firstItem="Nuo-Oe-TYp" firstAttribute="leading" secondItem="FAl-IE-VmA" secondAttribute="leadingMargin" id="wJ7-jB-bbb"/>
-                                            </constraints>
                                         </collectionViewCellContentView>
                                         <size key="customSize" width="159" height="98"/>
                                         <connections>
-                                            <outlet property="batter_percentage" destination="Cop-NN-Iw2" id="qXy-5h-mNI"/>
-                                            <outlet property="dog_name" destination="pAv-vT-64F" id="2Y3-Kj-3eS"/>
-                                            <outlet property="status" destination="Nuo-Oe-TYp" id="ers-7S-Afv"/>
+                                            <outlet property="batter_percentage" destination="Cop-NN-Iw2" id="NOF-8Y-FtD"/>
+                                            <outlet property="dog_name" destination="pAv-vT-64F" id="DLO-n2-7Ve"/>
+                                            <outlet property="status" destination="Nuo-Oe-TYp" id="Qaa-2p-EZO"/>
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cell2" id="AsT-q6-BkZ" customClass="inCell2" customModule="GPS_Tracker" customModuleProvider="target">
-                                        <rect key="frame" x="169" y="19" width="98" height="60"/>
+                                        <rect key="frame" x="169" y="19" width="110" height="60"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="3nu-Hm-gIB">
-                                            <rect key="frame" x="0.0" y="0.0" width="98" height="60"/>
+                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" id="3nu-Hm-gIB">
+                                            <rect key="frame" x="0.0" y="0.0" width="110" height="60"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PfA-65-giz">
-                                                    <rect key="frame" x="15" y="13" width="75" height="35"/>
+                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PfA-65-giz">
+                                                    <rect key="frame" x="4.5948662710179633" y="13.000000000000909" width="99.999999999969077" height="35"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                                    <connections>
+                                                        <action selector="didClick:" destination="AsT-q6-BkZ" eventType="touchUpInside" id="FhA-IE-cUc"/>
+                                                    </connections>
                                                 </button>
                                             </subviews>
-                                            <constraints>
-                                                <constraint firstItem="PfA-65-giz" firstAttribute="trailing" secondItem="3nu-Hm-gIB" secondAttribute="trailingMargin" id="LTS-82-MNa"/>
-                                                <constraint firstItem="PfA-65-giz" firstAttribute="centerY" secondItem="3nu-Hm-gIB" secondAttribute="centerY" id="NXk-p6-hZI"/>
-                                                <constraint firstItem="PfA-65-giz" firstAttribute="top" secondItem="3nu-Hm-gIB" secondAttribute="top" constant="13" id="uoA-7a-SaO"/>
-                                            </constraints>
                                         </collectionViewCellContentView>
-                                        <size key="customSize" width="98" height="60"/>
+                                        <size key="customSize" width="110" height="60"/>
                                         <connections>
                                             <outlet property="button" destination="PfA-65-giz" id="pTt-Dk-vvx"/>
                                         </connections>
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HTd-dd-PmO" userLabel="Geo Fence Drop Down">
-                                <rect key="frame" x="339" y="59.333333333333343" width="49" height="35"/>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" preservesSuperviewLayoutMargins="YES" layoutMarginsFollowReadableWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pey-xq-TpX">
+                                <rect key="frame" x="10" y="212" width="410" height="700"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <standardMapConfiguration key="preferredConfiguration"/>
+                            </mapView>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HTd-dd-PmO" userLabel="Geo Fence Drop Down">
+                                <rect key="frame" x="343" y="42" width="49" height="34.333333333333343"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" image="flag.square" catalog="system"/>
                                 <connections>
                                     <segue destination="arA-oY-jIv" kind="show" id="oCu-AJ-pDp"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ro9-Jn-Cab">
-                                <rect key="frame" x="20" y="59" width="75" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
-                                <connections>
-                                    <action selector="startDrawingGeoFence:" destination="BYZ-38-t0r" eventType="touchUpInside" id="MmD-OP-l6o"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="z5u-fS-SUi" firstAttribute="centerX" secondItem="pey-xq-TpX" secondAttribute="centerX" id="1aE-Qj-AZy"/>
-                            <constraint firstItem="HTd-dd-PmO" firstAttribute="leading" secondItem="z5u-fS-SUi" secondAttribute="trailing" constant="55.333333333333371" id="7L0-fd-vGO"/>
-                            <constraint firstItem="z5u-fS-SUi" firstAttribute="leading" secondItem="ro9-Jn-Cab" secondAttribute="trailing" constant="51.666666666666629" id="91N-Mv-qAm"/>
-                            <constraint firstItem="pey-xq-TpX" firstAttribute="top" secondItem="9KK-Ck-iDm" secondAttribute="bottom" constant="36" id="98f-Wn-qCn"/>
-                            <constraint firstItem="pey-xq-TpX" firstAttribute="leading" secondItem="9KK-Ck-iDm" secondAttribute="leading" id="L4t-Hg-G5M"/>
-                            <constraint firstItem="ro9-Jn-Cab" firstAttribute="centerY" secondItem="z5u-fS-SUi" secondAttribute="centerY" id="UjM-9m-3H5"/>
-                            <constraint firstItem="ro9-Jn-Cab" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="W9q-uZ-Rvc"/>
-                            <constraint firstItem="9KK-Ck-iDm" firstAttribute="top" secondItem="z5u-fS-SUi" secondAttribute="bottom" constant="13.999999999999986" id="X2F-Xg-LCq"/>
-                            <constraint firstItem="z5u-fS-SUi" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="7.6666666666666856" id="X7s-dV-Kd3"/>
-                            <constraint firstItem="ro9-Jn-Cab" firstAttribute="leading" secondItem="9KK-Ck-iDm" secondAttribute="leading" id="csm-u0-MTf"/>
-                            <constraint firstItem="z5u-fS-SUi" firstAttribute="centerX" secondItem="9KK-Ck-iDm" secondAttribute="centerX" id="hfH-Cl-lMQ"/>
-                            <constraint firstItem="z5u-fS-SUi" firstAttribute="centerY" secondItem="HTd-dd-PmO" secondAttribute="centerY" id="waz-lz-4fI"/>
-                            <constraint firstItem="z5u-fS-SUi" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="zqr-kE-Glr"/>
-                        </constraints>
                     </view>
                     <connections>
+                        <outlet property="AppNameLabel" destination="z5u-fS-SUi" id="4tC-7E-Byq"/>
                         <outlet property="collectionView" destination="9KK-Ck-iDm" id="pbO-Ih-v5p"/>
+                        <outlet property="geoFenceDropDown" destination="HTd-dd-PmO" id="9wD-Jw-uz0"/>
                         <outlet property="mapView" destination="pey-xq-TpX" id="eOf-77-D2I"/>
                         <outlet property="startDraw" destination="ro9-Jn-Cab" id="gqT-Gh-ITF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-43.255813953488371" y="-44.420600858369099"/>
+            <point key="canvasLocation" x="-20.930232558139533" y="28.969957081545065"/>
         </scene>
         <!--Pop Up View Controller-->
         <scene sceneID="rMK-xC-VAd">

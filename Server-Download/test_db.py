@@ -11,7 +11,7 @@ def send_update(lat, lon,device_id="Nala"):
             "lat": lat,
             "lng": lon,       # <-- use lng to match the model
             "bat": 97,
-            "status" : True,
+            "status" : False,
             "timestamp": None # let server fill it
         }
         resp = requests.post(
