@@ -289,6 +289,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             return cell
         }
     }
+    
+    func enterNameOfGeoFence(){
+    
+    }
+    
+    func createNameTag(name: String){
+        print(name)
+    }
 }
 
 //functions that control the button pressing in drawing mode
@@ -304,23 +312,36 @@ extension ViewController:buttonControl{
     //save button
     //once the user has finished with there drawing save the data into the polygon set
     func finishZoneTapped() {
-        guard currentPoints.count > 2 else { return }  // need at least triangle
+        let alert = UIAlertController(title: "Enter Geofence Name", message: nil, preferredStyle: .alert)
+        alert.addTextField{textField in textField.placeholder = "Boundry Name"}
         
-        let polygon = MKPolygon(coordinates: currentPoints, count: currentPoints.count)
-        exclusionZones.append(polygon)
+        alert.addAction(UIAlertAction(title: "Save", style: .default){_ in
+            let name = alert.textFields?.first?.text ?? "Unknown"
+            self.createNameTag(name: name)
+            
+            guard self.currentPoints.count > 2 else { return }  // need at least triangle
+            
+            let polygon = MKPolygon(coordinates: self.currentPoints, count: self.currentPoints.count)
+            self.exclusionZones.append(polygon)
+            
+            // Clear temporary line
+            let tempLines = self.mapView.overlays.filter { $0 is MKPolyline }
+            self.mapView.removeOverlays(tempLines)
+            
+            self.mapView.addOverlay(polygon)
+            self.currentPoints.removeAll()
+            self.drawMode = false;
+            self.addPolygonsBack();
+            self.collectionView.reloadData();
+            self.mapView.delegate = nil
+        })
         
-        // Clear temporary line
-        let tempLines = mapView.overlays.filter { $0 is MKPolyline }
-        mapView.removeOverlays(tempLines)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel){_ in
+            self.clearZonesTapped()
+        })
         
-        mapView.addOverlay(polygon)
-        currentPoints.removeAll()
-        drawMode = false;
-        addPolygonsBack();
-        collectionView.reloadData();
-        self.mapView.delegate = nil
+        present(alert, animated: true)
     }
-    
     
     //reset button
     //clears all current lines
@@ -410,7 +431,5 @@ class inCell2:UICollectionViewCell{
         default:
             return
         }
-        
     }
-    
 }
