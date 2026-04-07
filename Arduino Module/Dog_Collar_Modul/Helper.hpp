@@ -13,9 +13,12 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoHttpClient.h>
+#define TINY_GSM_MODEM_SIM7080
+#include <TinyGsmClient.h>
 
 
 std::pair<String,String> getLatAndLng(const String& s);
+bool checkIfSafe(const String& s);
 bool checkIfSatLock(const String& s);
 String createPayload(const String& lat, const String& lng, const String& bat, bool status);
 void sendPacket(const String& payload, HttpClient& client);

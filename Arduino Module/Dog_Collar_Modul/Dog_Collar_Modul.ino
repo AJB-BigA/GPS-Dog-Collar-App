@@ -1,10 +1,10 @@
-#include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoHttpClient.h>
 #include <Arduino.h>
 #include "Helper.hpp"
 #define TINY_GSM_MODEM_SIM7080
 #include <TinyGsmClient.h>
+#include <WiFi.h>
 
 //internet username and password
 const char* ssid = "TelstraE26C84";
@@ -13,7 +13,6 @@ const char* password = "8df5zb87z3";
 //api server probably shouldnt add these to github xd
 const char server[] = "api.249dogs.uk";
 int port = 443;
-
 //set up wifi routing
 WiFiClientSecure wifi; 
 HttpClient wifiClient(wifi, server, port);
@@ -26,60 +25,84 @@ HttpClient simClient(client, server, port);
 
 bool modemStatus = false;
 bool satLoc = false;
+bool safeCords = false; 
 
-String readModemResponse(unsigned long timeoutMs = 2000) {
-  String resp = "";
-  unsigned long start = millis();
 
-  while (millis() - start < timeoutMs) {
-    while (Serial1.available()) {
-      char c = Serial1.read();
-      resp += c;
-    }
+String sendAT(const char *cmd, unsigned long waitMs = 2000){
+  // Clear buffer first
+  while(Serial1.available()) {
+    Serial1.read();
   }
-  return resp;
-}
-
-void sendAT(const char *cmd, unsigned long waitMs = 500){
+  
+  Serial.print(">> ");
   Serial.println(cmd);
   Serial1.print(cmd);
-  delay(waitMs);
-
-  String resp = readModemResponse(waitMs);
-  Serial.println(resp);   // print full response block
-  }
-
-String readOutput(){
-  String output;
-   while (Serial1.available()) {
+  Serial1.print("\r\n");
+  
+  String output = "";
+  unsigned long startTime = millis();
+  
+  // Keep reading until timeout OR we see "OK" or "ERROR"
+  while(millis() - startTime < waitMs) {
+    while(Serial1.available()) {
       char c = Serial1.read();
       output += c;
+      Serial.print(c);
+      startTime = millis();  // Reset timeout when we receive data
     }
-    return output;
+    
+    // Check if response is complete
+    if(output.indexOf("OK") >= 0 || output.indexOf("ERROR") >= 0) {
+      break;
+    }
+    
+    delay(10);  // Small delay to avoid busy-waiting
+  }
+  
+  Serial.println();
+  return output;
 }
 
-//returns the percentage of the battery
-String getBatteryPercentage(){
-  String output; 
-  sendAT("AT+CBC");
-  delay(1000);
-  String battery = readOutput();
-  String bPercentage = formatBattery(battery);
-  return bPercentage;
-}
-
-//this function will toggle the modem on and off
-void toggleModem(){
+//pusles the modem to turn it on or off
+void pulseModem(){
   pinMode(14, OUTPUT);
   digitalWrite(14, HIGH);
   delay(1500);
   digitalWrite(14,LOW);
-  delay(3000);
-  modemStatus = !modemStatus;
-  //turn GNSS power on
-  //AT+CGNSPWR = 1 -> power on 
-  sendAT("AT+CGNSPWR=1");
+  delay(5000);
+}
+
+//this function will toggle the modem on and off
+void toggleModem(bool ON, int maxRetries = 5) {
+  if(maxRetries <= 0) {
+    Serial.println("ERROR: Max retries reached, modem not responding");
+    modemStatus = false;
+    return;
+  }
+  String status = sendAT("AT");
   
+  
+  if(ON) {
+    if(status.indexOf("OK") >= 0) {
+      modemStatus = true;
+      Serial.println("Modem is ON");
+      return;
+    } else {
+      Serial.println("===turning on modem=== Retries left: " + String(maxRetries));
+      pulseModem();
+      toggleModem(true, maxRetries - 1);  // Decrement retries
+    }
+  } else {
+    if(status.indexOf("OK") >= 0) {
+      Serial.println("===turning off modem===");
+      pulseModem();
+      toggleModem(false, maxRetries - 1);  // Decrement retries
+    } else {
+      modemStatus = false;
+      Serial.println("Modem is OFF");
+      return;
+    }
+  }
 }
 
 //checks to see if the wifi is connected
@@ -88,77 +111,100 @@ bool connectToWifi(){
       WiFi.begin(ssid, password);
       delay(10000);
     }
-    return(Wifi.status() == WL_CONNECTED);
+    return(WiFi.status() == WL_CONNECTED);
 }
 
 //runs the protocall for connecting to the cell tower
 void connectToTower(){
   modem.restart();
   modem.waitForNetwork();
-  modem.gprsConnect("Insert text here");
-  while(!modem.gprsConnected()){
+  modem.gprsConnect("simbase");
+  while(!modem.isGprsConnected()){
     delay(3000);
-    modem.gprsConnect("Insert text here");
+    modem.gprsConnect("simbase");
   }
+}
+
+//returns the percentage of the battery
+String getBatteryPercentage(){
+  String battery = sendAT("AT+CBC");; 
+  delay(1000);
+  String bPercentage = formatBattery(battery);
+  Serial.println("Batery% : " + bPercentage);
+  return bPercentage;
 }
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  toggleModem();
   delay(2000);
 
   //turn on the serial output
   Serial1.setRX(1);
   Serial1.setTX(0);
   Serial1.begin(115200);
-
   delay(1000);
 }
 
 unsigned long lastGNSS = 0;
 unsigned long heartbeat = 0;
-
+int i = 0;
+String gpsOutput = "";
 void loop() {
   if(connectToWifi()){
     //checks if the modem is on and turns it off
     if(modemStatus){
-      toggleModem();
+      toggleModem(false);
     }
     //every 5 mins turn the modem on and send the battery %
     if (millis() - heartbeat > 300000) {
-      toggleModem();
+      toggleModem(true);
       delay(2000);
       String bPercentage = getBatteryPercentage();
       String payload = createPayload("-34.7528185047608", "150.4537067701276", bPercentage, true);
+      wifi.setInsecure();
       sendPacket(payload, wifiClient);
       heartbeat = millis();
     }
   }else{
       //checks if the modem is on and turns it on if its not
       if(!modemStatus){
-        toggleModem();
+        toggleModem(true);
         delay(3000);
       }
-      String output = "";
+      //every 5 seconds gets a new satilight number
       if (millis() - lastGNSS > 5000) {
+        sendAT("AT+CGNSPWR=1"); 
         lastGNSS = millis();
-        Serial1.print("AT+CGNSINF");
+        gpsOutput = sendAT("AT+CGNSINF", 5000);
+
+        //run checks on the output 
+        satLoc = checkIfSatLock(gpsOutput);
+        Serial.print(gpsOutput);
+        safeCords = checkIfSafe(gpsOutput);
       }
-      output = readOutput();
-      satLoc = checkIfSatLock(output);
-      if(satLoc){
-        auto cords = getLatAndLng(output);
+      
+
+      if(satLoc && safeCords){
+        Serial.print("sat lock");
+        auto cords = getLatAndLng(gpsOutput);
         String bPercentage = getBatteryPercentage();
-        String payload = createPayload(cords.first, cords.second,bPercentage , connectToWifi());
+        Serial.println("Batery% : " + bPercentage);
+
+        String payload = createPayload(cords.first, cords.second,bPercentage,connectToWifi());
 
         //turn off the gps
         sendAT("AT+CGNSPWR=0");
 
+        //BUG AlERT THE SIM MAY NOT ME ON
         //turn the sim card on
         connectToTower();
         sendPacket(payload, simClient);
         sendAT("AT+CGNSPWR=1");
       }
+
+      //turn the checks back off after each cycle
+      satLoc = false; 
+      safeCords = false; 
     }
 }

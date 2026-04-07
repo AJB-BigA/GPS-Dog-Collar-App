@@ -152,6 +152,12 @@ def get_id(db=Depends(get_db)):
     return result
 
 @app.get("/api/geoFence/rows")
-def geo_rows(db=Depends(get_db)):
+def get_geo_rows(db=Depends(get_db)):
     """Returs the number of geo fences"""
     return db.query(func.count(func.distinct(GeoFence.id))).scalar()
+
+@app.get("/api/geoFence/names")
+def get_geo_names(db=Depends(get_db)):
+    """Returns the names of the geofence"""
+    names = db.execute(select(GeoFence.names).scalar().all())
+    return 

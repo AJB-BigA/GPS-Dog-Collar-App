@@ -8,11 +8,6 @@
 import UIKit
 import MapKit
 
-struct dogData{
-    let bat: Double
-    let status: Bool
-}
-
 class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     @IBOutlet weak var mapView: MKMapView!
@@ -20,9 +15,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     @IBOutlet weak var geoFenceDropDown:UIButton!
     @IBOutlet weak var AppNameLabel: UILabel!
     @IBOutlet weak var startDraw:UIButton!
-    
-    //used to draw points for geofencing
-    var drawingPoints: [CLLocationCoordinate2D] = []
     
     //used for personal location
     private let locationManager = CLLocationManager()
@@ -46,8 +38,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     //holds the points for each dog made
     var dogAnnotations: [String: MKPointAnnotation] = [:]
     
+    //holds the current points
     var currentPoints: [CLLocationCoordinate2D] = []
     
+    //draws the polygons
     var exclusionZones: [MKPolygon] = []
 
     
@@ -57,26 +51,41 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         startDraw.translatesAutoresizingMaskIntoConstraints = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         geoFenceDropDown.translatesAutoresizingMaskIntoConstraints = false
+        AppNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        //borders
+        startDraw.layer.borderColor = UIColor.systemRed.cgColor
+        startDraw.layer.borderWidth = 1
+        startDraw.layer.cornerRadius = 10
+        geoFenceDropDown.layer.borderColor = UIColor.systemBlue.cgColor
+        geoFenceDropDown.layer.cornerRadius = 10
+        geoFenceDropDown.layer.borderWidth = 1
+        
         NSLayoutConstraint.activate([
+            AppNameLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            AppNameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0),
+            AppNameLabel.widthAnchor.constraint(equalToConstant: 150),
+            AppNameLabel.heightAnchor.constraint(equalToConstant: 40),
+            
             startDraw.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             startDraw.centerXAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
-            startDraw.widthAnchor.constraint(equalToConstant: 150),
-            startDraw.heightAnchor.constraint(equalToConstant: 20),
+            startDraw.widthAnchor.constraint(equalToConstant: 50),
+            startDraw.heightAnchor.constraint(equalToConstant: 40),
             
             geoFenceDropDown.topAnchor.constraint(equalTo:  view.safeAreaLayoutGuide.topAnchor, constant: 10),
             geoFenceDropDown.centerXAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
-            geoFenceDropDown.widthAnchor.constraint(equalToConstant: 150),
-            geoFenceDropDown.heightAnchor.constraint(equalToConstant: 44),
+            geoFenceDropDown.widthAnchor.constraint(equalToConstant: 50),
+            geoFenceDropDown.heightAnchor.constraint(equalToConstant: 40),
             
             collectionView.topAnchor.constraint(equalTo: startDraw.bottomAnchor, constant: 20),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             collectionView.heightAnchor.constraint(equalToConstant: 90),
 
-            mapView.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 50),
-            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            mapView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.60)
+            mapView.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 5),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            mapView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.7)
              
 
          ])
@@ -277,19 +286,23 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                 cell.batter_percentage.text = "\(data.bat)%"
                 cell.status.text = data.status ? "Connected To Wifi" : "Using Sim Data"
             }
-
             return cell
         }
     }
 }
+
+//functions that control the button pressing in drawing mode
 extension ViewController:buttonControl{
+    //cancel button
     func stopDrawingGeoFence(){
         self.mapView.delegate = nil
         drawMode = false
-        currentPoints.removeAll()
         collectionView.reloadData()
+        clearZonesTapped()
     }
     
+    //save button
+    //once the user has finished with there drawing save the data into the polygon set
     func finishZoneTapped() {
         guard currentPoints.count > 2 else { return }  // need at least triangle
         
@@ -302,14 +315,25 @@ extension ViewController:buttonControl{
         
         mapView.addOverlay(polygon)
         currentPoints.removeAll()
-        stopDrawingGeoFence()
+        drawMode = false;
+        addPolygonsBack();
+        collectionView.reloadData();
+        self.mapView.delegate = nil
     }
     
+    
+    //reset button
+    //clears all current lines
     func clearZonesTapped() {
+        let tempLines = mapView.overlays.filter { $0 is MKPolyline }
+        mapView.removeOverlays(tempLines)
         currentPoints.removeAll()
-        exclusionZones.removeAll()
-        currentPoints.removeAll()
-        mapView.removeOverlays(mapView.overlays)
+    }
+    //draws polygons from the data
+    func addPolygonsBack(){
+        for p in exclusionZones {
+            mapView.addOverlay(p)
+        }
     }
 }
 
@@ -341,7 +365,6 @@ class inCell:UICollectionViewCell{
         contentView.backgroundColor = .systemGray6
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
-        
 
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOffset = CGSize(width: 0, height: 2)
@@ -363,16 +386,12 @@ class inCell2:UICollectionViewCell{
     
     override func awakeFromNib(){
         super.awakeFromNib()
+        button.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .systemGray6
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
-        
+        button.titleLabel?.textAlignment = .center
 
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOffset = CGSize(width: 0, height: 2)
-        layer.shadowRadius = 4
-        layer.shadowOpacity = 0.1
-        layer.masksToBounds = false
     }
     var num = Int()
     

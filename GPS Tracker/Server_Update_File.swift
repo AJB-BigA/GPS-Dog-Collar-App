@@ -7,21 +7,6 @@
 
 import Foundation
 
-struct LocationResponse: Decodable {
-    let device_id: String
-    let lat: Double
-    let lng: Double
-    let bat: Double
-    let status: Bool
-    let timestamp: String
-}
-
-struct GeoFenceResponse: Decodable{
-    let id : Int
-    let name: String
-    let points: [[Double]]
-}
-
 class update_server_info {
     private let baseURL = URL(string: "https://api.249dogs.uk")!
     
@@ -100,6 +85,21 @@ class update_server_info {
                 return
             }
             let count = try? JSONDecoder().decode(Int.self, from: data)
+            completion(count!)
+        }.resume()
+    }
+    func get_geoFence_names(completion: @escaping(String)->Void){
+        guard let url = makeURL(path: "/api/geoFence/names") else {
+            completion("nill")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url){data, _, error in
+            guard let data = data, error == nil else {
+                completion("nill")
+                return
+            }
+            let count = try? JSONDecoder().decode(String.self, from: data)
             completion(count!)
         }.resume()
     }

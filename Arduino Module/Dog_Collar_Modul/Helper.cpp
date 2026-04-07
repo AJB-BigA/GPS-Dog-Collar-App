@@ -4,8 +4,13 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoHttpClient.h>
+#include <vector>
+#define TINY_GSM_MODEM_SIM7080
+#define TINY_GSM_SSL_CLIENT_AUTHENTICATION TINY_GSM_SSL_CLIENT_AUTHENTICATION_NONE
+#include <TinyGsmClient.h>
 
 using namespace std;
+
 /*
 
 Function returns the lat and lng from the data given to it by the gps
@@ -25,31 +30,30 @@ or
  parm -> String: CGNSINF output
  return pair<String,String>: lat, lng 
  */
-pair<String, String> getLatAndLng(const String& s){
-    int i = 0;
-    int j = 0;
-    String lat;
-    String lng;
-    //scan all until reach the comma required
-    while(j < 4){
-        if (s[i] == ','){
-            j++;
-        }
-        i++;
+
+pair<string,string> getLatAndLng(const string& s){
+
+    string data;
+    vector<string> fields;
+    istringstream stream(s);
+    
+    while(getline(stream, data, ',')){
+        fields.push_back(data);
     }
-    //gets the lat
-    while(s[i] != ','){
-        lat += s[i];
-        i++;
-    }
-    i++;
-    //gets the lng
-    while(s[i] != ','){
-        lng += s[i];
-        i++;
-    }
-    return make_pair(lat, lng);
+    return make_pair(fields[3],fields[4]);
 }
+
+
+//checks the validity of the gps cords 
+bool checkIfSafe(const String& s){
+    auto count(s.begin(), s.end(), ',') + 1;
+    if(s > 56 & count < 5 ){
+        return true;
+    }
+    else {return false;}
+    }
+}
+
 /*
 This function checks to see if the gps has a fix on its position
 need to check the second output
@@ -62,7 +66,7 @@ bool checkIfSatLock(const String& s){
     }
     return (s[i+1] == '1');
     }
-}
+
 /*
 creates the payload
 parm -> String: lat
@@ -87,7 +91,6 @@ return -> void
 sends the packet to the server 
 */
 void sendPacket(const String& payload, HttpClient& client){
-    wifi.setInsecure();
     String path = "/api/location";
     client.beginRequest();
     client.post(path);
