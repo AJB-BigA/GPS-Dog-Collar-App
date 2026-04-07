@@ -318,9 +318,9 @@ extension ViewController:buttonControl{
         alert.addAction(UIAlertAction(title: "Save", style: .default){_ in
             let name = alert.textFields?.first?.text ?? "Unknown"
             self.createNameTag(name: name)
-            
             guard self.currentPoints.count > 2 else { return }  // need at least triangle
             
+            self.api.post_geoFence_locations(name: name, points: self.currentPoints)
             let polygon = MKPolygon(coordinates: self.currentPoints, count: self.currentPoints.count)
             self.exclusionZones.append(polygon)
             

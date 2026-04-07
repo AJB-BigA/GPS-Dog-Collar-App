@@ -102,7 +102,6 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
 def add_new_fence(fence: GeoFenceIn, db=Depends(get_db)):
     """Adds new geo fences to the database"""
     db_obj = GeoFence(
-        id = fence.id,
         name = fence.name,
         points = fence.points
     )

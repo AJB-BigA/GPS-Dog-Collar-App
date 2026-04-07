@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import MapKit
+
 
 class update_server_info {
     private let baseURL = URL(string: "https://api.249dogs.uk")!
@@ -101,6 +103,30 @@ class update_server_info {
             }
             let count = try? JSONDecoder().decode(String.self, from: data)
             completion(count!)
+        }.resume()
+    }
+    
+    func post_geoFence_locations(name: String, points: [CLLocationCoordinate2D]){
+        guard let url = makeURL(path: "/api/geo_fence/new-fence/") else {return}
+        
+        var request = URLRequest(url:url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let pointArrays = points.map{[$0.latitude, $0.longitude]}
+        
+        let body: [String: Any] = [
+            "name": name,
+            "points" : points
+        ]
+        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        URLSession.shared.dataTask(with: request){data,response,error in
+            if let error = error {
+                print("Error \(error)")
+                return
+            }
         }.resume()
     }
 }
