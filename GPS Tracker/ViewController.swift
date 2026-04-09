@@ -19,31 +19,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     //used for personal location
     private let locationManager = CLLocationManager()
     
-    //used to store the amount of dogs available
-    var itemCount: Int = 0
-    
-    //when to draw button is clickec
+    //when to draw button is clicked
     var drawMode = false
     var drawButtonNames = ["Save", "Cancel", "Reset"]
     
-    //api server update stuff
-    let api = update_server_info()
+    //api server update
     var timer:Timer?
     
-    //holds the dogs ids for string and to ask the database for different things
-    var dogs_ids:[String] = []
-    
-    var dogs_data:[String : dogData] = [:]
-    
-    //holds the points for each dog made
-    var dogAnnotations: [String: MKPointAnnotation] = [:]
-    
-    //holds the current points
+    //holds the points for the geofence. Before save is called
     var currentPoints: [CLLocationCoordinate2D] = []
-    
-    //draws the polygons
-    var exclusionZones: [MKPolygon] = []
-
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -107,8 +91,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         timer = Timer.scheduledTimer(withTimeInterval: 45.0, repeats: true){[weak self] _ in
             self?.updateTimer()
         }
+        
+        //grab the geofences
     }
     
+    //grabs the geofences data
+
     func updateTimer(){
         self.updateData()
         self.collectionView.reloadData()
@@ -197,9 +185,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         }
     }
     //updates the collars location
+    
     func updateData(){
         for id in dogs_ids{
-            api.update_locations(d_id: id){[weak self] location in
+            LocationUpdateManager.shared.update_locations(d_id: id){[weak self] location in
                 guard let self = self,
                       let id = location?.device_id,
                       let lat = location?.lat,
@@ -227,11 +216,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                 }
             }
         }
-       
     }
     
     func loadRowCount(){
-        api.get_rows { [weak self] count in
+        LocationUpdateManager.shared.get_rows { [weak self] count in
             guard let self = self else { return }
             self.itemCount = count
             DispatchQueue.main.async {
@@ -241,7 +229,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     }
     
     func loadIds(){
-        api.get_id{[weak self] ids in
+        LocationUpdateManager.shared.get_id{[weak self] ids in
             guard let self = self, let ids = ids else {return}
             DispatchQueue.main.async {
                 self.dogs_ids.append(contentsOf: ids)
@@ -293,10 +281,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     func enterNameOfGeoFence(){
     
     }
-    
-    func createNameTag(name: String){
-        print(name)
-    }
 }
 
 //functions that control the button pressing in drawing mode
@@ -313,30 +297,31 @@ extension ViewController:buttonControl{
     //once the user has finished with there drawing save the data into the polygon set
     func finishZoneTapped() {
         let alert = UIAlertController(title: "Enter Geofence Name", message: nil, preferredStyle: .alert)
-        alert.addTextField{textField in textField.placeholder = "Boundry Name"}
+        alert.addTextField { textField in textField.placeholder = "Boundary Name" }
         
-        alert.addAction(UIAlertAction(title: "Save", style: .default){_ in
+        alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
             let name = alert.textFields?.first?.text ?? "Unknown"
-            self.createNameTag(name: name)
-            guard self.currentPoints.count > 2 else { return }  // need at least triangle
+            guard self.currentPoints.count > 2 else { return }
             
-            self.api.post_geoFence_locations(name: name, points: self.currentPoints)
-            let polygon = MKPolygon(coordinates: self.currentPoints, count: self.currentPoints.count)
-            self.exclusionZones.append(polygon)
-            
-            // Clear temporary line
-            let tempLines = self.mapView.overlays.filter { $0 is MKPolyline }
-            self.mapView.removeOverlays(tempLines)
-            
-            self.mapView.addOverlay(polygon)
-            self.currentPoints.removeAll()
-            self.drawMode = false;
-            self.addPolygonsBack();
-            self.collectionView.reloadData();
-            self.mapView.delegate = nil
+            GeoFenceManager.shared.add(name: name, points: self.currentPoints) { success in
+                guard success else {
+                    print("Failed to save fence")
+                    return
+                }
+                DispatchQueue.main.async {
+                    let tempLines = self.mapView.overlays.filter { $0 is MKPolyline }
+                    self.mapView.removeOverlays(tempLines)
+                    
+                    self.currentPoints.removeAll()
+                    self.drawMode = false
+                    self.addPolygonsBack()
+                    self.collectionView.reloadData()
+                    self.mapView.delegate = nil
+                }
+            }
         })
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel){_ in
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
             self.clearZonesTapped()
         })
         
@@ -352,9 +337,7 @@ extension ViewController:buttonControl{
     }
     //draws polygons from the data
     func addPolygonsBack(){
-        for p in exclusionZones {
-            mapView.addOverlay(p)
-        }
+        mapView.addOverlays(GeoFenceManager.shared.polygons)
     }
 }
 

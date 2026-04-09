@@ -56,6 +56,7 @@ class GeoFenceIn(BaseModel):
 
 
 class GeoFenceOut(BaseModel):
+    id: int
     name: str
     points: List[Tuple[float, float]]
 
@@ -150,13 +151,20 @@ def get_id(db=Depends(get_db)):
     result = db.execute(stmt).scalars().all()
     return result
 
-@app.get("/api/geoFence/rows")
-def get_geo_rows(db=Depends(get_db)):
-    """Returs the number of geo fences"""
-    return db.query(func.count(func.distinct(GeoFence.id))).scalar()
+@app.get("/api/geoFence/data")
+def get_geo_data(db=Depends(get_db)):
+    """Returns the data for geo fences"""
+    geofence = db.execute(select(GeoFence)).scalars().all()
+    return geofence
+    
+@app.delete("api/geoFence/{fence_id}")
+def delete_geo_fence(fence_id = int, db=Depends(get_db)):
+    """Deletes a geoFence by ID"""
+    obj = db.get(GeoFence, fence_id)
+    if not obj:
+        raise HTTPException(status_code =404, detail = "details not found")
 
-@app.get("/api/geoFence/names")
-def get_geo_names(db=Depends(get_db)):
-    """Returns the names of the geofence"""
-    names = db.execute(select(GeoFence.names).scalar().all())
-    return 
+    db.delete(obj)
+    db.commit()
+
+    return {"Deleted", fence_id}
