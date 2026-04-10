@@ -1,10 +1,11 @@
 import Foundation
 import MapKit
 
+/// Represents a geofence boundary returned by the API.
 struct GeoFenceResponse: Decodable{
-    let id : Int
-    let name: String
-    let points: [[Double]]
+    let id : Int           // Unique server-side ID used for delete requests
+    let name: String       // User-assigned label for the boundary
+    let points: [[Double]] // Ordered list of [latitude, longitude] pairs forming the polygon
 }
 
 class GeoFenceManager {
@@ -34,7 +35,7 @@ class GeoFenceManager {
         return polygon
     }
     
-    //loads the fence data
+    // Fetches all saved geofences from the server and builds their MKPolygon overlays.
     func load(completion: @escaping (Bool) -> Void) {
         guard let url = makeURL(path: "/api/geoFence/data") else {
             completion(false)
@@ -57,7 +58,7 @@ class GeoFenceManager {
             }
         }.resume()
     }
-    //adds a new fence
+    // POSTs a new geofence to the server, then appends the result to local state.
     func add(name: String, points: [CLLocationCoordinate2D], completion: @escaping (Bool) -> Void) {
         guard let url = makeURL(path: "/api/geo_fence/new-fence/") else {
             completion(false)
@@ -88,7 +89,7 @@ class GeoFenceManager {
             }
         }.resume()
     }
-    //removes polygons
+    // Sends a DELETE request for the given fence ID, then removes it from local state.
     func delete(id: Int, completion: @escaping (Bool) -> Void) {
         guard let url = makeURL(path: "/api/geoFence/\(id)") else {
             completion(false)

@@ -10,6 +10,7 @@ import MapKit
 
 class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
+    
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var collectionView:UICollectionView!
     @IBOutlet weak var geoFenceDropDown:UIButton!
@@ -65,14 +66,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             collectionView.heightAnchor.constraint(equalToConstant: 90),
-
+            
             mapView.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 5),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             mapView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.7)
-             
-
-         ])
+            
+            
+        ])
         mapView.mapType = .hybrid
         mapView.layer.cornerRadius = 16
         mapView.layer.masksToBounds = true
@@ -82,21 +83,17 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         locationManager.requestWhenInUseAuthorization()
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .follow
-        loadIds()
-        loadRowCount()
         updateData()
         collectionView.delegate = self
         collectionView.dataSource = self
         
+        // Poll the API every 45 seconds to keep dog locations up to date.
         timer = Timer.scheduledTimer(withTimeInterval: 45.0, repeats: true){[weak self] _ in
             self?.updateTimer()
         }
-        
-        //grab the geofences
     }
     
-    //grabs the geofences data
-
+    // Called by the repeating timer — refreshes location data and reloads the collection view.
     func updateTimer(){
         self.updateData()
         self.collectionView.reloadData()
@@ -119,6 +116,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         mapView.addOverlay(polyline)
     }
     
+    //geoFenceDropDown button
     @IBAction func startDrawingGeoFence(_ sender:Any){
         self.mapView.delegate = self
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleMapTap(_:)))
@@ -148,7 +146,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     }
     
     
-    //handels the location of the user
+    // Handles changes to location authorization status.
     func locationManager(_ manager: CLLocationManager) {
         handleAuthChange(manager.authorizationStatus)
     }
@@ -160,7 +158,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             mapView.userTrackingMode = .follow
             locationManager.startUpdatingLocation()
         case .denied, .restricted:
-            //todo add code that sends promps the user to accept this setting as app required location
+            // TODO: prompt the user to open Settings and grant location access — the app requires it.
             break
         case .notDetermined:
             // Still waiting for the system prompt decision
@@ -169,7 +167,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             break
         }
     }
-    //updates the users loction
+    // Centers the map on the user's latest location.
     func locationUpdate(_ manager:CLLocationManager, didUpdateLocation locations:[CLLocation]){
         guard let loc = locations.last else {return}
         
@@ -178,114 +176,66 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         
         mapView.setRegion(region, animated: true)
     }
-    //saves the users update prefrence
+    // Responds to authorization changes and starts location updates when permitted.
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             locationManager.startUpdatingLocation()
         }
     }
-    //updates the collars location
-    
+    // Fetches the latest GPS location from the API for every registered collar.
     func updateData(){
-        for id in dogs_ids{
-            LocationUpdateManager.shared.update_locations(d_id: id){[weak self] location in
-                guard let self = self,
-                      let id = location?.device_id,
-                      let lat = location?.lat,
-                      let lng = location?.lng
-                else {return}
-                let dd = dogData(
-                        bat : location?.bat ?? 0.0,
-                        status: location?.status ?? true)
-                
-                dogs_data[id] = dd
-                let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-                
-                DispatchQueue.main.async {
-                    if let annotation = self.dogAnnotations[id]{
-                        annotation.coordinate = coord
-                    }else{
-                        
-                        let annotion = MKPointAnnotation()
-                        annotion.coordinate = coord
-                        annotion.title = id
-                        self.mapView.addAnnotation(annotion)
-                        self.dogAnnotations[id] = annotion
-                    }
-                    self.collectionView.reloadData()
-                }
+        for id in LocationUpdateManager.shared.dogs_ids{
+            LocationUpdateManager.shared.load_data(d_id: id){success in print(success ? "updated data" : "failed to update")
             }
         }
     }
-    
-    func loadRowCount(){
-        LocationUpdateManager.shared.get_rows { [weak self] count in
-            guard let self = self else { return }
-            self.itemCount = count
-            DispatchQueue.main.async {
-                self.collectionView.reloadData()
-            }
-        }
-    }
-    
-    func loadIds(){
-        LocationUpdateManager.shared.get_id{[weak self] ids in
-            guard let self = self, let ids = ids else {return}
-            DispatchQueue.main.async {
-                self.dogs_ids.append(contentsOf: ids)
-            }
-        }
-        print(dogs_ids)
-    }
-    //loads the dogs info into a tables
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        switch drawMode{
-        case true: return 3
-            
-        case false : return itemCount
-        }
-    }
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        switch drawMode {
-        case true:
-            return CGSize(width: 100, height: 50) // Size for buttons
-        case false:
-            return CGSize(width: 150, height: 100) // Size for dog cells
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        switch drawMode{
-        case true:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell2", for: indexPath) as! inCell2
-            cell.setInt(i: indexPath.row)
-            cell.button.setTitle(drawButtonNames[indexPath.row], for: .normal)
-            cell.delegate = self
-            
-            return cell
-            
-        case false:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! inCell
-            let id = dogs_ids[indexPath.row]
-            
-            if let data = dogs_data[id]{
-                cell.dog_name.text = id
-                cell.batter_percentage.text = "\(data.bat)%"
-                cell.status.text = data.status ? "Connected To Wifi" : "Using Sim Data"
+        // Returns the number of items: 3 action buttons in draw mode, or one card per dog otherwise.
+        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+            switch drawMode{
+            case true: return 3
+                
+            case false : return LocationUpdateManager.shared.dogs_data.count
             }
-            return cell
+        }
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+            switch drawMode {
+            case true:
+                return CGSize(width: 100, height: 50) // Size for buttons
+            case false:
+                return CGSize(width: 150, height: 100) // Size for dog cells
+            }
+        }
+        
+        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            
+            switch drawMode{
+            case true:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell2", for: indexPath) as! inCell2
+                cell.setInt(i: indexPath.row)
+                cell.button.setTitle(drawButtonNames[indexPath.row], for: .normal)
+                cell.delegate = self
+                
+                return cell
+                
+            case false:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! inCell
+                let id = LocationUpdateManager.shared.dogs_ids[indexPath.row]
+                
+                if let data = LocationUpdateManager.shared.dogs_data[id]{
+                    cell.dog_name.text = id
+                    cell.batter_percentage.text = "\(data.bat)%"
+                    cell.status.text = data.status ? "Connected To Wifi" : "Using Sim Data"
+                }
+                return cell
+            }
         }
     }
-    
-    func enterNameOfGeoFence(){
-    
-    }
-}
 
-//functions that control the button pressing in drawing mode
+// MARK: - Draw Mode Button Actions
+// Handles Save / Cancel / Reset actions triggered from the draw-mode collection view cells.
 extension ViewController:buttonControl{
-    //cancel button
+    // Cancel: exits draw mode and discards any in-progress points.
     func stopDrawingGeoFence(){
         self.mapView.delegate = nil
         drawMode = false
@@ -293,8 +243,7 @@ extension ViewController:buttonControl{
         clearZonesTapped()
     }
     
-    //save button
-    //once the user has finished with there drawing save the data into the polygon set
+    // Save: prompts for a name, then persists the drawn polygon via the API.
     func finishZoneTapped() {
         let alert = UIAlertController(title: "Enter Geofence Name", message: nil, preferredStyle: .alert)
         alert.addTextField { textField in textField.placeholder = "Boundary Name" }
@@ -328,14 +277,13 @@ extension ViewController:buttonControl{
         present(alert, animated: true)
     }
     
-    //reset button
-    //clears all current lines
+    // Reset: removes the in-progress polyline and clears the collected tap points.
     func clearZonesTapped() {
         let tempLines = mapView.overlays.filter { $0 is MKPolyline }
         mapView.removeOverlays(tempLines)
         currentPoints.removeAll()
     }
-    //draws polygons from the data
+    // Re-renders all saved geofence polygons on the map after a save or cancel.
     func addPolygonsBack(){
         mapView.addOverlays(GeoFenceManager.shared.polygons)
     }
@@ -378,6 +326,7 @@ class inCell:UICollectionViewCell{
         }
     }
 
+/// Delegate protocol for the three draw-mode action buttons (Save / Cancel / Reset).
 protocol buttonControl:AnyObject{
     func finishZoneTapped()
     func clearZonesTapped()

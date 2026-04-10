@@ -11,6 +11,8 @@ import CoreData
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+    // Kick off both data loads in parallel at startup so the UI has
+    // geofence boundaries and dog locations ready as soon as possible.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         GeoFenceManager.shared.load{
             success in print(success ? "Loaded GeoFence Data" : "Failed to load GeoFence Data")

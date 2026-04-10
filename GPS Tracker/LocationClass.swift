@@ -8,13 +8,14 @@
 import Foundation
 import MapKit
 
+/// Represents the latest location snapshot returned by the `/api/location/latest` endpoint.
 struct LocationResponse: Decodable {
-    let device_id: String
-    let lat: Double
-    let lng: Double
-    let bat: Double
-    let status: Bool
-    let timestamp: String
+    let device_id: String  // Unique identifier for the GPS collar
+    let lat: Double        // Latitude in decimal degrees
+    let lng: Double        // Longitude in decimal degrees
+    let bat: Double        // Battery level as a percentage (0–100)
+    let status: Bool       // true = connected to Wi-Fi, false = using cellular/SIM
+    let timestamp: String  // ISO-8601 timestamp of the last recorded location
 }
 
 class LocationUpdateManager {
@@ -22,12 +23,13 @@ class LocationUpdateManager {
     static let shared = LocationUpdateManager()
     private init() {}
     
-    //holds the dogs ids for string and to ask the database for different things
+    // Ordered list of device IDs fetched from the server; used to query location data per collar.
     var dogs_ids:[String] = []
     
+    // Maps each device ID to its most recent location response.
     var dogs_data:[String : LocationResponse] = [:]
     
-    //holds the points for each dog made
+    // Maps each device ID to its map annotation so pins can be updated in place.
     var dogAnnotations: [String: MKPointAnnotation] = [:]
     
     private let baseURL = URL(string: "https://api.249dogs.uk")!
@@ -88,6 +90,8 @@ class LocationUpdateManager {
             }
         }.resume()
     }
+    // Fetches all device IDs and then loads location data for each in parallel.
+    // Uses DispatchGroup so the completion fires only after every request finishes.
     func load_all(completion: @escaping (Bool) -> Void) {
         load_dog_ids { success in
             guard success else {
