@@ -9,9 +9,9 @@ This system architecture works by using the pi as a middle point. The collar sen
 **collar -> pi ←> iOS app**
 
 ## Hardware 
--Raspberry Pi 32g
--Raspberry Pi Picco
--SIM7000 (Sends packets using cell towers and has an in built gps module)
+- Raspberry Pi 32g
+- Raspberry Pi Picco
+- SIM7000 (Sends packets using cell towers and has an in built gps module)
 
 Folder Layout Arduino Module: Contains Code for the pico
 GPS Tracker.xcodeproj: Contains the project file for XCode
