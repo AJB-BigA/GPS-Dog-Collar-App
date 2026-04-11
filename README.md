@@ -13,8 +13,9 @@ This system architecture works by using the pi as a middle point. The collar sen
 - Raspberry Pi Picco
 - SIM7000 (Sends packets using cell towers and has an in built gps module)
 
-Folder Layout Arduino Module: Contains Code for the pico
-GPS Tracker.xcodeproj: Contains the project file for XCode
-GPS Tracker: Contains the swift files associated with the project
-GPS TrackerUITest is empty 
-Server Downloads contains all of the server files along with the database and FastAPI code
+## Folder Layout 
+- Arduino Module: Contains Code for the pico
+- GPS Tracker.xcodeproj: Contains the project file for XCode
+- GPS Tracker: Contains the swift files associated with the project
+- GPS TrackerUITest is empty 
+- Server Downloads contains all of the server files along with the database and FastAPI code
