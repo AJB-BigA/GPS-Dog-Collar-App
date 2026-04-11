@@ -1,4 +1,4 @@
-#GPS Dog Collar
+#GPS Dog Collar(H1)
 Includes database code and Arduino code for the collars.
 The server uses a Linux Ubuntu server available here https://ubuntu.com/download/server.
 The app was created in order to avoid subscriptions services from off the shelf models. 
