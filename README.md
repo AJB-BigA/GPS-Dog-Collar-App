@@ -4,6 +4,7 @@ The app was created in order to avoid subscriptions services from off the shelf 
 The app is an iOS app.
 I will upload everything I did including the 3D printing files for people to copy.
 This system architecture works by using the pi as a middle point. The collar sends periodic updates to the pi and the iOS app connects to the pi and receives information from it. As well as sending information back.
+
 collar -> pi ←> iOS app
 
 Hardware 
