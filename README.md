@@ -1,4 +1,4 @@
-#GPS Dog Collar(H1)
+# GPS Dog Collar
 Includes database code and Arduino code for the collars.
 The server uses a Linux Ubuntu server available here https://ubuntu.com/download/server.
 The app was created in order to avoid subscriptions services from off the shelf models. 
@@ -8,10 +8,10 @@ This system architecture works by using the pi as a middle point. The collar sen
 
 **collar -> pi ←> iOS app**
 
-##Hardware 
+## Hardware 
 -Raspberry Pi 32g
 -Raspberry Pi Picco
--SIM7000
+-SIM7000 (Sends packets using cell towers and has an in built gps module)
 
 Folder Layout Arduino Module: Contains Code for the pico
 GPS Tracker.xcodeproj: Contains the project file for XCode
