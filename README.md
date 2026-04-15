@@ -15,6 +15,7 @@ This system architecture works by using the pi as a middle point. The collar sen
 
 ## Folder Layout 
 - Arduino Module: Contains Code for the pico
+- 3D Print Files : Contains the CAD and STP files for the collar case
 - GPS Tracker.xcodeproj: Contains the project file for XCode
 - GPS Tracker: Contains the swift files associated with the project
 - GPS TrackerUITest is empty 
