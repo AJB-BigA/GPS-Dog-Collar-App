@@ -157,8 +157,8 @@ def get_geo_data(db=Depends(get_db)):
     geofence = db.execute(select(GeoFence)).scalars().all()
     return geofence
     
-@app.delete("api/geoFence/{fence_id}")
-def delete_geo_fence(fence_id = int, db=Depends(get_db)):
+@app.delete("/api/geoFence/{fence_id}")
+def delete_geo_fence(fence_id: int, db=Depends(get_db)):
     """Deletes a geoFence by ID"""
     obj = db.get(GeoFence, fence_id)
     if not obj:

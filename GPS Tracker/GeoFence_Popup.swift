@@ -45,26 +45,52 @@ class PopUpViewController: UIViewController, UITableViewDataSource, UITableViewD
             
             alert.addAction(UIAlertAction(title: "Delete", style: .destructive){_ in
                 GeoFenceManager.shared.delete(id: GeoFenceManager.shared.fences[indexPath.row].id)
-                {success in print(success ? "deleted successfully" : "failed to delete")
+                {success in print(success ? "deleted successfully" : "failed to delete")}
+                GeoFenceManager.shared.load{ [weak self] success in
+                    guard let self = self, success else {return}
+                    self.geoFence.reloadData()
                 }
             })
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            
             self?.present(alert, animated: true)
+            
         }
         return cell
     }
 }
 
 class geoFenceInCell:UITableViewCell {
-    @IBOutlet weak var toggle:UISwitch!
     @IBOutlet weak var geoFenceName:UILabel!
     @IBOutlet weak var deleteButton:UIButton!
     
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        geoFenceName.translatesAutoresizingMaskIntoConstraints = false
+        deleteButton.translatesAutoresizingMaskIntoConstraints = false
+
+        // Prevent the label from stretching over the button
+        geoFenceName.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        deleteButton.setContentHuggingPriority(.required, for: .horizontal)
+        deleteButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        deleteButton.addTarget(self, action: #selector(deleteFence), for: .touchUpInside)
+
+        NSLayoutConstraint.activate([
+            geoFenceName.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            geoFenceName.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            geoFenceName.trailingAnchor.constraint(lessThanOrEqualTo: deleteButton.leadingAnchor, constant: -8),
+
+            deleteButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -13),
+            deleteButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+        ])
+    }
+    
     var onDelete: (()->Void)?
     
-    @IBAction func deleteFence(){
-       onDelete?()
+    @objc func deleteFence(){
+        onDelete?()
+        
     }
 }

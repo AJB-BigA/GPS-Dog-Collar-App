@@ -36,11 +36,24 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     /// Coordinates tapped by the user while drawing a geofence boundary (cleared on save or reset).
     var currentPoints: [CLLocationCoordinate2D] = []
     
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.mapView.delegate = self
         
+        //load geoFence Data and present once its loaded
+        GeoFenceManager.shared.load { [weak self] success in
+             guard let self = self, success else { return }
+             self.mapView.addOverlays(GeoFenceManager.shared.polygons)
+             self.addPolygonsBack()
+         }
+        LocationUpdateManager.shared.load_all{
+            [weak self] success in
+                 guard let self = self, success else { return }
+            self.collectionView.reloadData()
+        }
         // Enable Auto Layout for all storyboard outlets
         mapView.translatesAutoresizingMaskIntoConstraints = false
         startDraw.translatesAutoresizingMaskIntoConstraints = false
@@ -105,6 +118,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             self?.updateTimer()
         }
     }
+    @objc func refreshMap() {
+        mapView.removeOverlays(mapView.overlays)
+        mapView.addOverlays(GeoFenceManager.shared.polygons)
+        addPolygonsBack()
+    }
     
     // MARK: - Data Refresh
     
@@ -123,6 +141,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         currentPoints.append(coordinate)
         redrawCurrentLine()
     }
+    
     /// Clears any existing temporary polylines and redraws the boundary line through all current points.
     func redrawCurrentLine() {
         let tempLines = mapView.overlays.filter { $0 is MKPolyline }
@@ -136,7 +155,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     /// Enters draw mode — attaches a tap gesture to the map so the user can tap points for a new geofence.
     @IBAction func startDrawingGeoFence(_ sender:Any){
-        self.mapView.delegate = self
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleMapTap(_:)))
         self.mapView.addGestureRecognizer(tap)
         drawMode = true
@@ -222,6 +240,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         for id in LocationUpdateManager.shared.dogs_ids{
             LocationUpdateManager.shared.load_data(d_id: id){success in print(success ? "updated data" : "failed to update")
             }
+            guard let lat = LocationUpdateManager.shared.dogs_data[id]?.lat,
+                  let lng = LocationUpdateManager.shared.dogs_data[id]?.lng else {return}
+            let pin = MKPointAnnotation()
+            pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+            pin.title = id
+            mapView.addAnnotation(pin)
+          
         }
     }
         
@@ -277,7 +302,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
 extension ViewController:buttonControl{
     /// Exits draw mode, removes the map tap gesture, and discards any in-progress points.
     func stopDrawingGeoFence(){
-        self.mapView.delegate = nil
         drawMode = false
         collectionView.reloadData()
         clearZonesTapped()
@@ -306,7 +330,6 @@ extension ViewController:buttonControl{
                     self.drawMode = false
                     self.addPolygonsBack()
                     self.collectionView.reloadData()
-                    self.mapView.delegate = nil
                 }
             }
         })
@@ -323,9 +346,11 @@ extension ViewController:buttonControl{
         let tempLines = mapView.overlays.filter { $0 is MKPolyline }
         mapView.removeOverlays(tempLines)
         currentPoints.removeAll()
+        
     }
     /// Re-adds all saved geofence polygons as map overlays (called after a save or cancel).
     func addPolygonsBack(){
+        mapView.removeOverlays(mapView.overlays)
         mapView.addOverlays(GeoFenceManager.shared.polygons)
     }
 }

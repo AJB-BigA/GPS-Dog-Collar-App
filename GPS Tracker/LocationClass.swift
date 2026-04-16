@@ -97,9 +97,8 @@ class LocationUpdateManager {
             }
         }.resume()
     }
-    /// Fetches all device IDs and then loads location data for each in parallel.
-    /// Uses `DispatchGroup` so the completion fires only after every request finishes.
-    /// - Parameter completion: Returns `true` if all data was loaded successfully, `false` if the initial ID fetch failed.
+    // Fetches all device IDs and then loads location data for each in parallel.
+    // Uses DispatchGroup so the completion fires only after every request finishes.
     func load_all(completion: @escaping (Bool) -> Void) {
         load_dog_ids { success in
             guard success else {

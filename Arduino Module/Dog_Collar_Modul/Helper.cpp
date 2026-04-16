@@ -2,9 +2,11 @@
 #include <iostream>
 #include <Arduino.h>
 #include <WiFi.h>
+#include <sstream>
 #include <WiFiClientSecure.h>
 #include <ArduinoHttpClient.h>
 #include <vector>
+#include <algorithm>
 #define TINY_GSM_MODEM_SIM7080
 #define TINY_GSM_SSL_CLIENT_AUTHENTICATION TINY_GSM_SSL_CLIENT_AUTHENTICATION_NONE
 #include <TinyGsmClient.h>
@@ -45,13 +47,14 @@ pair<string,string> getLatAndLng(const string& s){
 
 
 //checks the validity of the gps cords 
-bool checkIfSafe(const String& s){
-    auto count(s.begin(), s.end(), ',') + 1;
-    if(s > 56 & count < 5 ){
+ bool checkIfSafe(const String& s){
+    string stdStr = s.c_str();
+    auto numSections = count(stdStr.begin(), stdStr.end(), ',') + 1;
+    if(s.length() > 56 && numSections >= 5){
         return true;
     }
-    else {return false;}
-    }
+    else { return false; }
+    return false;
 }
 
 /*
