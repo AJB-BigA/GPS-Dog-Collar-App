@@ -34,6 +34,7 @@ class LocationUpdateManager {
     
     private let baseURL = URL(string: "https://api.249dogs.uk")!
     
+    /// Builds a full API URL by appending the given path and optional query items to the base URL.
     private func makeURL(path: String,
                          queryItems: [URLQueryItem]? = nil) -> URL? {
         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
@@ -42,6 +43,10 @@ class LocationUpdateManager {
         return components.url
     }
     
+    /// Fetches the latest location data for a single device from the server and stores it in `dogs_data`.
+    /// - Parameters:
+    ///   - d_id: The device ID of the GPS collar to query.
+    ///   - completion: Returns `true` if the location was successfully fetched and decoded, `false` otherwise.
     func load_data(d_id:String,completion: @escaping(Bool)->Void){
         let query: [URLQueryItem] = [
             URLQueryItem(name: "device_id", value: d_id)
@@ -68,6 +73,8 @@ class LocationUpdateManager {
         }.resume()
     }
     
+    /// Fetches the list of registered device IDs from the server and stores them in `dogs_ids`.
+    /// - Parameter completion: Returns `true` if the IDs were successfully fetched and decoded, `false` otherwise.
     func load_dog_ids(completion: @escaping(Bool)->Void){
         guard let url = makeURL(path: "/api/device_id")
         else {
@@ -90,8 +97,9 @@ class LocationUpdateManager {
             }
         }.resume()
     }
-    // Fetches all device IDs and then loads location data for each in parallel.
-    // Uses DispatchGroup so the completion fires only after every request finishes.
+    /// Fetches all device IDs and then loads location data for each in parallel.
+    /// Uses `DispatchGroup` so the completion fires only after every request finishes.
+    /// - Parameter completion: Returns `true` if all data was loaded successfully, `false` if the initial ID fetch failed.
     func load_all(completion: @escaping (Bool) -> Void) {
         load_dog_ids { success in
             guard success else {

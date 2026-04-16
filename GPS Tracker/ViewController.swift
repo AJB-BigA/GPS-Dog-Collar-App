@@ -8,8 +8,11 @@
 import UIKit
 import MapKit
 
+/// Main view controller — displays a satellite map with dog collar locations, a scrollable
+/// collection view of dog status cards, and geofence drawing controls.
 class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
+    // MARK: - IBOutlets
     
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var collectionView:UICollectionView!
@@ -17,28 +20,35 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     @IBOutlet weak var AppNameLabel: UILabel!
     @IBOutlet weak var startDraw:UIButton!
     
-    //used for personal location
+    // MARK: - Properties
+    
+    /// Manages the user's own GPS location for the blue dot on the map.
     private let locationManager = CLLocationManager()
     
-    //when to draw button is clicked
+    /// When `true`, the collection view shows Save / Cancel / Reset buttons instead of dog cards.
     var drawMode = false
+    /// Titles for the three draw-mode action buttons.
     var drawButtonNames = ["Save", "Cancel", "Reset"]
     
-    //api server update
+    /// Repeating timer that polls the API to refresh collar locations.
     var timer:Timer?
     
-    //holds the points for the geofence. Before save is called
+    /// Coordinates tapped by the user while drawing a geofence boundary (cleared on save or reset).
     var currentPoints: [CLLocationCoordinate2D] = []
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Enable Auto Layout for all storyboard outlets
         mapView.translatesAutoresizingMaskIntoConstraints = false
         startDraw.translatesAutoresizingMaskIntoConstraints = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         geoFenceDropDown.translatesAutoresizingMaskIntoConstraints = false
         AppNameLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        //borders
+        // Style the toolbar buttons with rounded borders
         startDraw.layer.borderColor = UIColor.systemRed.cgColor
         startDraw.layer.borderWidth = 1
         startDraw.layer.cornerRadius = 10
@@ -74,39 +84,47 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             
             
         ])
+        // Configure the map with satellite imagery and rounded corners
         mapView.mapType = .hybrid
         mapView.layer.cornerRadius = 16
         mapView.layer.masksToBounds = true
-        //ask user for permission to use this info
+        
+        // Request location permission and start tracking the user's position
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .follow
+        // Perform the initial data fetch and wire up the collection view
         updateData()
         collectionView.delegate = self
         collectionView.dataSource = self
         
-        // Poll the API every 45 seconds to keep dog locations up to date.
+        // Poll the API every 45 seconds to keep collar locations fresh
         timer = Timer.scheduledTimer(withTimeInterval: 45.0, repeats: true){[weak self] _ in
             self?.updateTimer()
         }
     }
     
-    // Called by the repeating timer — refreshes location data and reloads the collection view.
+    // MARK: - Data Refresh
+    
+    /// Called by the repeating timer — refreshes collar location data and reloads the collection view.
     func updateTimer(){
         self.updateData()
         self.collectionView.reloadData()
     }
     
+    // MARK: - Geofence Drawing
+    
+    /// Converts a tap on the map into a coordinate and appends it to the in-progress geofence boundary.
     @objc func handleMapTap(_ gesture: UITapGestureRecognizer) {
         let point = gesture.location(in: mapView)
         let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
         currentPoints.append(coordinate)
         redrawCurrentLine()
     }
+    /// Clears any existing temporary polylines and redraws the boundary line through all current points.
     func redrawCurrentLine() {
-        // Remove any temporary polylines
         let tempLines = mapView.overlays.filter { $0 is MKPolyline }
         mapView.removeOverlays(tempLines)
         
@@ -116,7 +134,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         mapView.addOverlay(polyline)
     }
     
-    //geoFenceDropDown button
+    /// Enters draw mode — attaches a tap gesture to the map so the user can tap points for a new geofence.
     @IBAction func startDrawingGeoFence(_ sender:Any){
         self.mapView.delegate = self
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleMapTap(_:)))
@@ -126,7 +144,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     }
     
     
-    //draw lines
+    // MARK: - MKMapViewDelegate
+    
+    /// Returns the appropriate renderer for map overlays — blue lines for in-progress geofences,
+    /// red filled polygons for saved geofences.
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         if let polyline = overlay as? MKPolyline {
             let renderer = MKPolylineRenderer(polyline: polyline)
@@ -146,11 +167,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     }
     
     
-    // Handles changes to location authorization status.
+    // MARK: - CLLocationManagerDelegate
+    
+    /// Forwards authorization status changes to the shared handler.
     func locationManager(_ manager: CLLocationManager) {
         handleAuthChange(manager.authorizationStatus)
     }
     
+    /// Reacts to location permission changes — enables tracking when authorised, or shows a
+    /// Settings prompt when the user has denied access.
     private func handleAuthChange(_ status: CLAuthorizationStatus) {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
@@ -158,8 +183,18 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             mapView.userTrackingMode = .follow
             locationManager.startUpdatingLocation()
         case .denied, .restricted:
-            // TODO: prompt the user to open Settings and grant location access — the app requires it.
-            break
+            let alert = UIAlertController(
+                title: "Location Access Required",
+                message: "This app needs your location to track your dog's GPS collar. Please enable location access in Settings.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "Open Settings", style: .default) { _ in
+                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            present(alert, animated: true)
         case .notDetermined:
             // Still waiting for the system prompt decision
             break
@@ -167,7 +202,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             break
         }
     }
-    // Centers the map on the user's latest location.
+    /// Centers the map on the user's latest GPS position with a tight zoom level.
     func locationUpdate(_ manager:CLLocationManager, didUpdateLocation locations:[CLLocation]){
         guard let loc = locations.last else {return}
         
@@ -176,13 +211,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         
         mapView.setRegion(region, animated: true)
     }
-    // Responds to authorization changes and starts location updates when permitted.
+    /// Responds to authorisation changes and begins receiving location updates when permitted.
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             locationManager.startUpdatingLocation()
         }
     }
-    // Fetches the latest GPS location from the API for every registered collar.
+    /// Fetches the latest GPS location from the API for every registered collar.
     func updateData(){
         for id in LocationUpdateManager.shared.dogs_ids{
             LocationUpdateManager.shared.load_data(d_id: id){success in print(success ? "updated data" : "failed to update")
@@ -190,7 +225,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         }
     }
         
-        // Returns the number of items: 3 action buttons in draw mode, or one card per dog otherwise.
+        // MARK: - UICollectionViewDataSource & FlowLayout
+        
+        /// Returns the number of items: 3 action buttons in draw mode, or one card per dog otherwise.
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
             switch drawMode{
             case true: return 3
@@ -198,6 +235,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             case false : return LocationUpdateManager.shared.dogs_data.count
             }
         }
+        /// Returns smaller cells for draw-mode buttons, larger cells for dog status cards.
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
             switch drawMode {
             case true:
@@ -207,6 +245,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             }
         }
         
+        /// Dequeues and configures the appropriate cell — a draw-mode button (`inCell2`) or a
+        /// dog status card (`inCell`) showing name, battery, and connection status.
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             
             switch drawMode{
@@ -235,7 +275,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
 // MARK: - Draw Mode Button Actions
 // Handles Save / Cancel / Reset actions triggered from the draw-mode collection view cells.
 extension ViewController:buttonControl{
-    // Cancel: exits draw mode and discards any in-progress points.
+    /// Exits draw mode, removes the map tap gesture, and discards any in-progress points.
     func stopDrawingGeoFence(){
         self.mapView.delegate = nil
         drawMode = false
@@ -243,7 +283,8 @@ extension ViewController:buttonControl{
         clearZonesTapped()
     }
     
-    // Save: prompts for a name, then persists the drawn polygon via the API.
+    /// Presents an alert to name the geofence, then saves the polygon to the server via `GeoFenceManager`.
+    /// On success, clears the temporary polyline and re-renders all saved geofences.
     func finishZoneTapped() {
         let alert = UIAlertController(title: "Enter Geofence Name", message: nil, preferredStyle: .alert)
         alert.addTextField { textField in textField.placeholder = "Boundary Name" }
@@ -277,23 +318,27 @@ extension ViewController:buttonControl{
         present(alert, animated: true)
     }
     
-    // Reset: removes the in-progress polyline and clears the collected tap points.
+    /// Removes the in-progress polyline from the map and clears all collected tap points.
     func clearZonesTapped() {
         let tempLines = mapView.overlays.filter { $0 is MKPolyline }
         mapView.removeOverlays(tempLines)
         currentPoints.removeAll()
     }
-    // Re-renders all saved geofence polygons on the map after a save or cancel.
+    /// Re-adds all saved geofence polygons as map overlays (called after a save or cancel).
     func addPolygonsBack(){
         mapView.addOverlays(GeoFenceManager.shared.polygons)
     }
 }
 
+// MARK: - Dog Status Cell
+
+/// Collection view cell that displays a single dog's name, battery percentage, and connection status.
 class inCell:UICollectionViewCell{
     @IBOutlet weak var dog_name: UILabel!
     @IBOutlet weak var  batter_percentage: UILabel!
     @IBOutlet weak var status: UILabel!
     
+    /// Lays out labels vertically and applies a rounded card style with a subtle shadow.
     override func awakeFromNib(){
         super.awakeFromNib()
         dog_name.translatesAutoresizingMaskIntoConstraints = false
@@ -333,10 +378,15 @@ protocol buttonControl:AnyObject{
     func stopDrawingGeoFence()
 }
 
+// MARK: - Draw Mode Button Cell
+
+/// Collection view cell containing a single action button used during geofence drawing
+/// (Save, Cancel, or Reset). Delegates tap actions back to the view controller via `buttonControl`.
 class inCell2:UICollectionViewCell{
     weak var delegate: buttonControl?
     @IBOutlet weak var button: UIButton!
     
+    /// Styles the cell with a rounded background and centres the button label.
     override func awakeFromNib(){
         super.awakeFromNib()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -346,12 +396,15 @@ class inCell2:UICollectionViewCell{
         button.titleLabel?.textAlignment = .center
 
     }
+    /// Index that maps this cell to a draw-mode action (0 = Save, 1 = Cancel, 2 = Reset).
     var num = Int()
     
+    /// Stores the button index so `didClick` can dispatch the correct action.
     func setInt(i:Int){
         num = i
     }
     
+    /// Dispatches the tap to the appropriate delegate method based on the button index.
     @IBAction func didClick(_ sender: Any){
         switch num{
         case 0:
