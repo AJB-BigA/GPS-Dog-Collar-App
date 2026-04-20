@@ -36,6 +36,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     /// Coordinates tapped by the user while drawing a geofence boundary (cleared on save or reset).
     var currentPoints: [CLLocationCoordinate2D] = []
     
+    var dogPins: [String: MKPointAnnotation] = [:]
+    
     
     // MARK: - Lifecycle
     
@@ -242,12 +244,17 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             }
             guard let lat = LocationUpdateManager.shared.dogs_data[id]?.lat,
                   let lng = LocationUpdateManager.shared.dogs_data[id]?.lng else {return}
-            let pin = MKPointAnnotation()
-            mapView.removeAnnotation(pin)
-            pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-            pin.title = id
-            mapView.addAnnotation(pin)
-          
+            if let pin = dogPins[id] {
+                       // update existing pin
+                       pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+                   } else {
+                       // create pin for this dog for the first time
+                       let pin = MKPointAnnotation()
+                       pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+                       pin.title = id
+                       mapView.addAnnotation(pin)
+                       dogPins[id] = pin
+                   }
         }
     }
         
