@@ -33,16 +33,17 @@ or
  return pair<String,String>: lat, lng 
  */
 
-pair<string,string> getLatAndLng(const string& s){
-
+pair<String,String> getLatAndLng(const String& s){
+    string stdS = s.c_str();      // convert Arduino String → std::string here
     string data;
     vector<string> fields;
-    istringstream stream(s);
+    istringstream stream(stdS);   // istringstream needs std::string, use stdS
     
     while(getline(stream, data, ',')){
         fields.push_back(data);
     }
-    return make_pair(fields[3],fields[4]);
+    if(fields.size() < 6) return make_pair(String(""), String(""));
+    return make_pair(String(fields[3].c_str()), String(fields[4].c_str()));
 }
 
 
@@ -102,6 +103,12 @@ void sendPacket(const String& payload, HttpClient& client){
     client.beginBody();
     client.print(payload);
     client.endRequest();
+
+    // Drain the response or the next call may misbehave
+    int statusCode = client.responseStatusCode();
+    client.skipResponseHeaders();
+    // optionally: client.responseBody() if you care about the body
+    client.stop(); // if you want a clean close each time
 }
 
 /* 

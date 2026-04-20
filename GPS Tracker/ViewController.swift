@@ -243,6 +243,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             guard let lat = LocationUpdateManager.shared.dogs_data[id]?.lat,
                   let lng = LocationUpdateManager.shared.dogs_data[id]?.lng else {return}
             let pin = MKPointAnnotation()
+            mapView.removeAnnotation(pin)
             pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
             pin.title = id
             mapView.addAnnotation(pin)

@@ -5,13 +5,14 @@
 #define TINY_GSM_MODEM_SIM7080
 #include <TinyGsmClient.h>
 #include <WiFi.h>
+#include "secrets.h"
 
 //internet username and password
-const char* ssid = "TelstraE26C84";
-const char* password = "8df5zb87z3";
+const char* ssid = WifiSSID;
+const char* password = WifiPassword;
 
 //api server probably shouldnt add these to github xd
-const char server[] = "api.249dogs.uk";
+const char server[] = serverHTML;
 int port = 443;
 //set up wifi routing
 WiFiClientSecure wifi; 
@@ -55,13 +56,12 @@ String sendAT(const char *cmd, unsigned long waitMs = 2000){
     if(output.indexOf("OK") >= 0 || output.indexOf("ERROR") >= 0) {
       break;
     }
-    
-    delay(10);  // Small delay to avoid busy-waiting
   }
   
   Serial.println();
   return output;
 }
+
 
 //pusles the modem to turn it on or off
 void pulseModem(){
@@ -122,7 +122,9 @@ void connectToTower(){
   while(!modem.isGprsConnected()){
     delay(3000);
     modem.gprsConnect("simbase");
+    Serial.print("Failed to connect to tower");
   }
+  Serial.print("Connected and sent");
 }
 
 //returns the percentage of the battery
@@ -192,7 +194,7 @@ void loop() {
         Serial.println("Batery% : " + bPercentage);
 
         String payload = createPayload(cords.first, cords.second,bPercentage,connectToWifi());
-
+        Serial.print(payload);
         //turn off the gps
         sendAT("AT+CGNSPWR=0");
 
