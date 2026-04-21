@@ -38,6 +38,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     var dogPins: [String: MKPointAnnotation] = [:]
     
+    private var drawTapGesture: UITapGestureRecognizer?
+    
     
     // MARK: - Lifecycle
     
@@ -55,7 +57,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             [weak self] success in
                  guard let self = self, success else { return }
             self.collectionView.reloadData()
+            for id in LocationUpdateManager.shared.dogs_ids{
+                self.addPinToMap(id: id)
+            }
         }
+        
         // Enable Auto Layout for all storyboard outlets
         mapView.translatesAutoresizingMaskIntoConstraints = false
         startDraw.translatesAutoresizingMaskIntoConstraints = false
@@ -90,14 +96,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             collectionView.topAnchor.constraint(equalTo: startDraw.bottomAnchor, constant: 20),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            collectionView.heightAnchor.constraint(equalToConstant: 90),
+            collectionView.heightAnchor.constraint(equalToConstant: 120),
             
             mapView.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 5),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             mapView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.7)
-            
-            
         ])
         // Configure the map with satellite imagery and rounded corners
         mapView.mapType = .hybrid
@@ -155,10 +159,16 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         mapView.addOverlay(polyline)
     }
     
+    @IBAction func geoFencePopUp(_ sender:UIButton){
+        sender.animateTap()
+    }
+    
     /// Enters draw mode — attaches a tap gesture to the map so the user can tap points for a new geofence.
-    @IBAction func startDrawingGeoFence(_ sender:Any){
+    @IBAction func startDrawingGeoFence(_ sender:UIButton){
+        sender.animateTap()
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleMapTap(_:)))
         self.mapView.addGestureRecognizer(tap)
+        drawTapGesture = tap
         drawMode = true
         self.collectionView.reloadData()
     }
@@ -185,7 +195,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         }
         return MKOverlayRenderer(overlay: overlay)
     }
-    
     
     // MARK: - CLLocationManagerDelegate
     
@@ -227,7 +236,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         guard let loc = locations.last else {return}
         
         let region = MKCoordinateRegion(
-            center: loc.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+            center: loc.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001))
         
         mapView.setRegion(region, animated: true)
     }
@@ -238,25 +247,53 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         }
     }
     /// Fetches the latest GPS location from the API for every registered collar.
-    func updateData(){
-        for id in LocationUpdateManager.shared.dogs_ids{
-            LocationUpdateManager.shared.load_data(d_id: id){success in print(success ? "updated data" : "failed to update")
+    func updateData() {
+        for id in LocationUpdateManager.shared.dogs_ids {
+            LocationUpdateManager.shared.load_data(d_id: id) { success in
+                print(success ? "updated data" : "failed to update")
+                DispatchQueue.main.async {
+                    self.addPinToMap(id: id)
+                }
             }
-            guard let lat = LocationUpdateManager.shared.dogs_data[id]?.lat,
-                  let lng = LocationUpdateManager.shared.dogs_data[id]?.lng else {return}
-            if let pin = dogPins[id] {
-                       // update existing pin
-                       pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-                   } else {
-                       // create pin for this dog for the first time
-                       let pin = MKPointAnnotation()
-                       pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-                       pin.title = id
-                       mapView.addAnnotation(pin)
-                       dogPins[id] = pin
-                   }
         }
     }
+    func addPinToMap(id : String){
+        
+        guard let lat = LocationUpdateManager.shared.dogs_data[id]?.lat,
+              let lng = LocationUpdateManager.shared.dogs_data[id]?.lng else {return}
+        if let pin = dogPins[id] {
+                   // update existing pin
+                   pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+               } else {
+                   // create pin for this dog for the first time
+                   
+                   let pin = MKPointAnnotation()
+                   pin.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+                   pin.title = id
+                   mapView.addAnnotation(pin)
+                   dogPins[id] = pin
+               }
+    }
+    
+    //centers the map on given cords
+    func centerMap(on coordinate: CLLocationCoordinate2D) {
+        let region = MKCoordinateRegion(
+            center: coordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)
+        )
+        mapView.setRegion(region, animated: true)
+    }
+    
+    //caculates the distance between the user and a dog
+    func distanceFromDog(id: String) -> Double?{
+        guard let dogsData = LocationUpdateManager.shared.dogs_data[id],
+              let userLocation = locationManager.location else {return 0.0}
+        let distance = CLLocation(
+            latitude: dogsData.lat,
+            longitude: dogsData.lng
+        )
+         return distance.distance(from: userLocation)
+        }
         
         // MARK: - UICollectionViewDataSource & FlowLayout
         
@@ -268,6 +305,20 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             case false : return LocationUpdateManager.shared.dogs_data.count
             }
         }
+    
+        //when clicked the map flys to the dogs location
+        func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let id = LocationUpdateManager.shared.dogs_ids[indexPath.row]
+        
+            guard let lat = LocationUpdateManager.shared.dogs_data[id]?.lat,
+                  let lng = LocationUpdateManager.shared.dogs_data[id]?.lng
+            else{return}
+            
+            let dogsLocation = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+            centerMap(on:dogsLocation)
+        }
+
+        
         /// Returns smaller cells for draw-mode buttons, larger cells for dog status cards.
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
             switch drawMode {
@@ -299,10 +350,21 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                     cell.dog_name.text = id
                     cell.batter_percentage.text = "\(data.bat)%"
                     cell.status.text = data.status ? "Connected To Wifi" : "Using Sim Data"
+                    if let metres = distanceFromDog(id: id) {
+                        if metres < 1000 {
+                            cell.distance.text = "\(Int(metres))m away"
+                        } else {
+                            cell.distance.text = String(
+                                format: "%.1fkm away",
+                                metres / 1000
+                            )
+                        }
+                    }
                 }
                 return cell
             }
         }
+
     }
 
 // MARK: - Draw Mode Button Actions
@@ -310,6 +372,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
 extension ViewController:buttonControl{
     /// Exits draw mode, removes the map tap gesture, and discards any in-progress points.
     func stopDrawingGeoFence(){
+        if let tap = drawTapGesture {
+              mapView.removeGestureRecognizer(tap)
+              drawTapGesture = nil
+          }
         drawMode = false
         collectionView.reloadData()
         clearZonesTapped()
@@ -331,6 +397,10 @@ extension ViewController:buttonControl{
                     return
                 }
                 DispatchQueue.main.async {
+                    if let tap = self.drawTapGesture {
+                           self.mapView.removeGestureRecognizer(tap)
+                           self.drawTapGesture = nil
+                       }
                     let tempLines = self.mapView.overlays.filter { $0 is MKPolyline }
                     self.mapView.removeOverlays(tempLines)
                     
@@ -370,6 +440,8 @@ class inCell:UICollectionViewCell{
     @IBOutlet weak var dog_name: UILabel!
     @IBOutlet weak var  batter_percentage: UILabel!
     @IBOutlet weak var status: UILabel!
+    @IBOutlet weak var distance: UILabel!
+    
     
     /// Lays out labels vertically and applies a rounded card style with a subtle shadow.
     override func awakeFromNib(){
@@ -377,6 +449,7 @@ class inCell:UICollectionViewCell{
         dog_name.translatesAutoresizingMaskIntoConstraints = false
         batter_percentage.translatesAutoresizingMaskIntoConstraints = false
         status.translatesAutoresizingMaskIntoConstraints = false
+        distance.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
         dog_name.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
@@ -390,7 +463,11 @@ class inCell:UICollectionViewCell{
         status.topAnchor.constraint(equalTo: batter_percentage.bottomAnchor, constant: 4),
         status.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
         status.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-        status.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)])
+        
+        distance.topAnchor.constraint(equalTo: status.bottomAnchor, constant: 4),
+        distance.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+        distance.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+        distance.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)])
     
         contentView.backgroundColor = .systemGray6
         contentView.layer.cornerRadius = 12
@@ -438,7 +515,8 @@ class inCell2:UICollectionViewCell{
     }
     
     /// Dispatches the tap to the appropriate delegate method based on the button index.
-    @IBAction func didClick(_ sender: Any){
+    @IBAction func didClick(_ sender: UIButton){
+        sender.animateTap()
         switch num{
         case 0:
             delegate?.finishZoneTapped()

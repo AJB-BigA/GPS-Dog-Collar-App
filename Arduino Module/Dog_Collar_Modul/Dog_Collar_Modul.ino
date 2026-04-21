@@ -62,18 +62,19 @@ String sendAT(const char *cmd, unsigned long waitMs = 2000){
   return output;
 }
 
-
 //pusles the modem to turn it on or off
 void pulseModem(){
-  pinMode(14, OUTPUT);
-  digitalWrite(14, HIGH);
+  pinMode(17, OUTPUT);
+  digitalWrite(17, HIGH);
   delay(1500);
-  digitalWrite(14,LOW);
+  digitalWrite(17,LOW);
   delay(5000);
+  Serial.println("Pusled Modem");
 }
 
 //this function will toggle the modem on and off
 void toggleModem(bool ON, int maxRetries = 5) {
+  
   if(maxRetries <= 0) {
     Serial.println("ERROR: Max retries reached, modem not responding");
     modemStatus = false;
@@ -129,7 +130,7 @@ void connectToTower(){
 
 //returns the percentage of the battery
 String getBatteryPercentage(){
-  String battery = sendAT("AT+CBC");; 
+  String battery = sendAT("AT+CBC");
   delay(1000);
   String bPercentage = formatBattery(battery);
   Serial.println("Batery% : " + bPercentage);
@@ -145,6 +146,7 @@ void setup() {
   Serial1.setRX(1);
   Serial1.setTX(0);
   Serial1.begin(115200);
+
   delay(1000);
 }
 
