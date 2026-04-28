@@ -5,6 +5,7 @@ from typing import Optional , List, Tuple
 from sqlalchemy import create_engine, Column, Integer, String, Float, func,select, Boolean, JSON
 from sqlalchemy.orm import sessionmaker, declarative_base
 from fastapi import Depends
+import PushNotification
 
 # ---------- DB SETUP ----------
 DATABASE_URL = "sqlite:///./gps.db"  # file in the current folder
@@ -33,6 +34,22 @@ class GeoFence(Base):
 
 Base.metadata.create_all(bind=engine)
 
+class DeviceFenceState(Base):
+    __tablename__ = "device_fence_state"
+
+    device_id = Column(Integer, ForeignKey("devices.id"), primary_key=True)
+    fence_id  = Column(Integer, ForeignKey("fences.id"), primary_key=True)
+    inside    = Column(Boolean, default=True)
+
+class APNHolder(Base):
+    __tablename__ = "apn_storage"
+
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(String, unique=True, index=True) 
+    token = Column(String, nullable = False)
+
+
+
 # ---------- API MODELS ----------
 class LocationIn(BaseModel):
     device_id: str
@@ -60,6 +77,9 @@ class GeoFenceOut(BaseModel):
     name: str
     points: List[Tuple[float, float]]
 
+class APNIn(BaseModel):
+    device_id : str
+    token: str
 
 # ---------- FASTAPI ----------
 app = FastAPI(title="GPS Dog Collar API")
@@ -71,11 +91,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
 #posts v----------------------------------------------v
 
 @app.post("/api/location", response_model=LocationOut)
 def add_location(loc: LocationIn, db=Depends(get_db)):
-    # Fill timestamp if not provided
     ts = loc.timestamp or datetime.utcnow().isoformat()
 
     db_obj = Location(
@@ -84,11 +104,33 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
         lng=loc.lng,
         bat=loc.bat,
         timestamp=ts,
-        status = loc.status
+        status=loc.status
     )
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
+
+    # Check all fences associated with this device
+    device = db.query(APNHolder).all()
+    fences = db.query(GeoFence).filter_by(device_id=loc.device_id).all()
+
+    for fence in fences:
+        is_inside_now = is_inside_fence(loc.lat, loc.lng, fence.coordinates)
+
+        state = db.query(DeviceFenceState).filter_by(
+            device_id=loc.device_id,
+            fence_id=fence.id
+        ).first()
+
+        if state is None:
+            db.add(DeviceFenceState(device_id=loc.device_id, fence_id=fence.id, inside=is_inside_now))
+        elif state.inside and not is_inside_now:
+            for apn in device:
+                PushNotification.sendNotification(apn.token, fence.name, loc.device_id)
+        if state:
+            state.inside = is_inside_now
+
+    db.commit()
 
     return LocationOut(
         device_id=db_obj.device_id,
@@ -96,7 +138,7 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
         lng=db_obj.lng,
         bat=db_obj.bat,
         timestamp=db_obj.timestamp,
-        status = db_obj.status
+        status=db_obj.status
     )
 
 @app.post("/api/geo_fence/new-fence/", response_model = GeoFenceOut)
@@ -116,6 +158,25 @@ def add_new_fence(fence: GeoFenceIn, db=Depends(get_db)):
         name = db_obj.name,
         points = db_obj.points
     )
+
+@app.post("/api/APNHolder/store", response_model = APNIn)
+def store_apn_value(apn : APNIn, db=Depends(get_db)):
+    """Stores the data for the apn numbers"""
+    db_object = db.query(APNHolder).filter(APNHolder.device_id == apn.device_id).first()
+
+    if db_object:
+        db_object.token = apn.token  # update existing
+    else:
+        db_object = APNHolder(device_id=apn.device_id, token=apn.token)  # create new
+        db_object.add(db_object)
+
+    db.add(db_object)
+    db.commit()
+    db.refresh(db_object)
+
+    
+
+    return db_object
 #Getters v--------------------------------------v
 
 @app.get("/api/location/latest", response_model=LocationOut)
@@ -130,14 +191,7 @@ def latest_location(device_id: str, db=Depends(get_db)):
     if not obj:
         raise HTTPException(status_code=404, detail="No locations for this device")
 
-    return LocationOut(
-        device_id=obj.device_id,
-        lat=obj.lat,
-        lng=obj.lng,
-        bat=obj.bat,
-        timestamp=obj.timestamp,
-        status = obj.status
-    )
+    return obj
 
 @app.get("/api/dogs")
 def number_of_entrys(db=Depends(get_db)):
@@ -157,6 +211,9 @@ def get_geo_data(db=Depends(get_db)):
     geofence = db.execute(select(GeoFence)).scalars().all()
     return geofence
     
+#delete v------------------------------------------------------v
+
+
 @app.delete("/api/geoFence/{fence_id}")
 def delete_geo_fence(fence_id: int, db=Depends(get_db)):
     """Deletes a geoFence by ID"""
@@ -168,3 +225,21 @@ def delete_geo_fence(fence_id: int, db=Depends(get_db)):
     db.commit()
 
     return {"Deleted", fence_id}
+
+
+
+#other functions V-----------------------------------------------------V
+def is_inside_fence(lat: float, lon: float, polygon: list[dict]) -> bool:
+    """Returns if the cords are inside a fence"""
+    n = len(polygon)
+    inside = False
+    j = n - 1
+    for i in range(n):
+        xi, yi = polygon[i]["lon"], polygon[i]["lat"]
+        xj, yj = polygon[j]["lon"], polygon[j]["lat"]
+        if ((yi > lat) != (yj > lat)) and (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+

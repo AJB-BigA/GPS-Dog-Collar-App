@@ -8,6 +8,8 @@
 import UIKit
 import MapKit
 
+
+
 /// Main view controller — displays a satellite map with dog collar locations, a scrollable
 /// collection view of dog status cards, and geofence drawing controls.
 class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -61,6 +63,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                 self.addPinToMap(id: id)
             }
         }
+        
+       NotificationCenter.default
+            .addObserver(
+                self,
+                selector: #selector(refreshMap),
+                name: .geoFenceChanged,
+                object: nil
+            )
         
         // Enable Auto Layout for all storyboard outlets
         mapView.translatesAutoresizingMaskIntoConstraints = false
@@ -123,11 +133,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         timer = Timer.scheduledTimer(withTimeInterval: 45.0, repeats: true){[weak self] _ in
             self?.updateTimer()
         }
+        
+        
     }
     @objc func refreshMap() {
         mapView.removeOverlays(mapView.overlays)
         mapView.addOverlays(GeoFenceManager.shared.polygons)
-        addPolygonsBack()
     }
     
     // MARK: - Data Refresh
@@ -355,7 +366,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                             cell.distance.text = "\(Int(metres))m away"
                         } else {
                             cell.distance.text = String(
-                                format: "%.1fkm away",
+                                format: "%f km away",
                                 metres / 1000
                             )
                         }

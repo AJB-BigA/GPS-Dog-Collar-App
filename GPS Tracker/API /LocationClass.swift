@@ -32,17 +32,6 @@ class LocationUpdateManager {
     // Maps each device ID to its map annotation so pins can be updated in place.
     var dogAnnotations: [String: MKPointAnnotation] = [:]
     
-    private let baseURL = URL(string: "https://api.249dogs.uk")!
-    
-    /// Builds a full API URL by appending the given path and optional query items to the base URL.
-    private func makeURL(path: String,
-                         queryItems: [URLQueryItem]? = nil) -> URL? {
-        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
-        components.path = path
-        components.queryItems = queryItems
-        return components.url
-    }
-    
     /// Fetches the latest location data for a single device from the server and stores it in `dogs_data`.
     /// - Parameters:
     ///   - d_id: The device ID of the GPS collar to query.
@@ -51,7 +40,7 @@ class LocationUpdateManager {
         let query: [URLQueryItem] = [
             URLQueryItem(name: "device_id", value: d_id)
         ]
-        guard let url = makeURL(path: "/api/location/latest", queryItems: query)
+        guard let url = APIClient.makeURL(path: "/api/location/latest", queryItems: query)
         else {
             completion(false)
             return}
@@ -76,7 +65,7 @@ class LocationUpdateManager {
     /// Fetches the list of registered device IDs from the server and stores them in `dogs_ids`.
     /// - Parameter completion: Returns `true` if the IDs were successfully fetched and decoded, `false` otherwise.
     func load_dog_ids(completion: @escaping(Bool)->Void){
-        guard let url = makeURL(path: "/api/device_id")
+        guard let url = APIClient.makeURL(path: "/api/device_id")
         else {
             completion(false)
             return}

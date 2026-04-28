@@ -15,16 +15,6 @@ class GeoFenceManager {
     var fences: [GeoFenceResponse] = []
     var polygons: [MKPolygon] = []
     
-    private let baseURL = URL(string: "https://api.249dogs.uk")!
-    
-    private func makeURL(path: String,
-                         queryItems: [URLQueryItem]? = nil) -> URL? {
-        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
-        components.path = path
-        components.queryItems = queryItems
-        return components.url
-    }
-    
     // converts a GeoFenceResponse into an MKPolygon
     private func makePolygon(from fence: GeoFenceResponse) -> MKPolygon {
         let coordinates = fence.points.map {
@@ -37,7 +27,7 @@ class GeoFenceManager {
     
     // Fetches all saved geofences from the server and builds their MKPolygon overlays.
     func load(completion: @escaping (Bool) -> Void) {
-        guard let url = makeURL(path: "/api/geoFence/data") else {
+        guard let url = APIClient.makeURL(path: "/api/geoFence/data") else {
             completion(false)
             return
         }
@@ -60,7 +50,7 @@ class GeoFenceManager {
     }
     // POSTs a new geofence to the server, then appends the result to local state.
     func add(name: String, points: [CLLocationCoordinate2D], completion: @escaping (Bool) -> Void) {
-        guard let url = makeURL(path: "/api/geo_fence/new-fence/") else {
+        guard let url = APIClient.makeURL(path: "/api/geo_fence/new-fence/") else {
             completion(false)
             return
         }
@@ -91,7 +81,7 @@ class GeoFenceManager {
     }
     // Sends a DELETE request for the given fence ID, then removes it from local state.
     func delete(id: Int, completion: @escaping (Bool) -> Void) {
-        guard let url = makeURL(path: "/api/geoFence/\(id)") else {
+        guard let url = APIClient.makeURL(path: "/api/geoFence/\(id)") else {
             completion(false)
             return
         }

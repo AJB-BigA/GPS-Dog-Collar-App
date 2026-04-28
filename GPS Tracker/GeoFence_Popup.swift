@@ -36,7 +36,6 @@ class PopUpViewController: UIViewController, UITableViewDataSource, UITableViewD
             cell.geoFenceName.text = "No data currently available"
             return cell
         }
-        
         cell.geoFenceName.text = GeoFenceManager.shared.fences[indexPath.row].name
         
         // Wire up the delete button to show a confirmation alert before removing the fence.
@@ -49,6 +48,7 @@ class PopUpViewController: UIViewController, UITableViewDataSource, UITableViewD
                 GeoFenceManager.shared.load{ [weak self] success in
                     guard let self = self, success else {return}
                     self.geoFence.reloadData()
+                    NotificationCenter.default.post(name: .geoFenceChanged, object:nil)
                 }
             })
             

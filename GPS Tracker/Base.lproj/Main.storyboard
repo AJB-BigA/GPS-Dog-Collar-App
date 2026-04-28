@@ -77,7 +77,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Battery" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aby-ZE-E8C" userLabel="Distance">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Battery" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aby-ZE-E8C">
                                                     <rect key="frame" x="22" y="38" width="114" height="21"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -89,7 +89,7 @@
                                         <size key="customSize" width="159" height="98"/>
                                         <connections>
                                             <outlet property="batter_percentage" destination="Cop-NN-Iw2" id="NOF-8Y-FtD"/>
-                                            <outlet property="distance" destination="aby-ZE-E8C" id="3jl-Le-5LR"/>
+                                            <outlet property="distance" destination="aby-ZE-E8C" id="seh-Er-Kr8"/>
                                             <outlet property="dog_name" destination="pAv-vT-64F" id="DLO-n2-7Ve"/>
                                             <outlet property="status" destination="Nuo-Oe-TYp" id="Qaa-2p-EZO"/>
                                         </connections>

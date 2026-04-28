@@ -7,13 +7,24 @@
 
 import UIKit
 import CoreData
-
+import UserNotifications
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // Kick off both data loads in parallel at startup so the UI has
     // geofence boundaries and dog locations ready as soon as possible.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        
+        UNUserNotificationCenter
+            .current()
+            .requestAuthorization(
+                options: [.alert, .sound, .badge]) { granted, error in
+                    if let error {
+                                print("Notification permission error: \(error)")
+                                return
+                            }
+                            print(granted ? "Permission granted" : "Permission denied")
+                        }
         return true
     }
 
@@ -29,6 +40,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the user discards a scene session.
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
+    }
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+        
+        let lastToken = UserDefaults.standard.string(forKey: "apns_token")
+        guard token != lastToken else { return } // no change, skip
+        
+        UserDefaults.standard.set(token, forKey: "apns_token")
+        APNTokenClass.shared.add(token: token) { success in
+            print(success ? "Token saved" : "Token save failed")
+        }
     }
 }
 

@@ -9,5 +9,5 @@ import UIKit
 import MapKit
 
 extension Notification.Name {
-    static let geoFenceDataLoaded = Notification.Name("geoFenceDataLoaded")
+    static let geoFenceChanged = Notification.Name("geoFenceChanged")
 }
