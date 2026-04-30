@@ -147,7 +147,7 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
 @app.post("/api/lostWifi")
 def wifi_lost_notification(incoming_id : IdBasedNotification, db=Depends(get_db)):
     """Recives when the dog leaves wifi for the first time"""
-    collar_warning = incoming_id.id
+    collar_warning = incoming_id.device_id
     devices = db.query(APNHolder).all()
 
     for device in devices:
@@ -180,13 +180,10 @@ def store_apn_value(apn : APNIn, db=Depends(get_db)):
         db_object.token = apn.token  # update existing
     else:
         db_object = APNHolder(device_id=apn.device_id, token=apn.token)  # create new
-        db_object.add(db_object)
 
     db.add(db_object)
     db.commit()
     db.refresh(db_object)
-
-    
 
     return db_object
 #Getters v--------------------------------------v

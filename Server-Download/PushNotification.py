@@ -48,7 +48,6 @@ def send_warning(token: str, collar_id:str):
     key = APNS_KEY,
     algorithm="ES256",
     headers = {"kid" : KEY_ID}
-
     )
     url = f"https://api.push.apple.com/3/device/{token}"
 

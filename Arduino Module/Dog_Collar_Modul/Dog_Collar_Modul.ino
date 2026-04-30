@@ -28,6 +28,7 @@ bool modemStatus = false;
 bool satLoc = false;
 bool safeCords = false; 
 bool firstTime = true;
+bool wifiInUse = false;
 
 
 String sendAT(const char *cmd, unsigned long waitMs = 2000){
@@ -114,14 +115,19 @@ bool connectToWifi(){
 
 //runs the protocall for connecting to the cell tower
 void connectToTower(){
+  int maxConnect = 0;
   modem.waitForNetwork();
   modem.gprsConnect("simbase");
   while(!modem.isGprsConnected()){
-    delay(3000);
+    if(maxConnect > 3){
+      break;
+    }
     modem.gprsConnect("simbase");
+    delay(5000);
     Serial.print("Failed to connect to tower");
+    maxConnect++;
   }
-  Serial.print("Connected and sent");
+  Serial.println("-----------------------Connected secure-------------------------");
 }
 
 //returns the percentage of the battery
@@ -147,10 +153,6 @@ void setup() {
  
  Serial1.print("AT\r\n");
   delay(2000);
-  while(Serial1.available()) {
-    Serial.write(Serial1.read());
-  }
-  toggleModem(true);
 }
 
 unsigned long lastGNSS = 0;
@@ -171,7 +173,10 @@ void loop() {
       String bPercentage = getBatteryPercentage();
       String payload = createPayload("-34.7528185047608", "150.4537067701276", bPercentage, true);
       wifi.setInsecure();
-      sendPacket(payload, wifiClient);
+      //ensure race condition of wifiClient will not effect the packet sent
+      wifiInUse = true;
+      sendPacket(payload, simClient);
+      wifiInUse = false;
       heartbeat = millis();
     }
     firstTime = true;
@@ -187,7 +192,7 @@ void loop() {
         toggleModem(true);
         sendAT("AT+CGNSPWR=0");
         connectToTower();
-        wifiLost(wifiClient);
+        wifiLost(simClient);
         firstTime = false;
     }
       //checks if the modem is on and turns it on if its not
@@ -232,7 +237,9 @@ void loop() {
 
 
 // Core 2 - wifi reconnection
-void setup1() { }
+void setup1() { 
+  WiFi.begin(ssid, password);
+}
 void loop1() {
     if (WiFi.status() != WL_CONNECTED){
         WiFi.begin(ssid, password);

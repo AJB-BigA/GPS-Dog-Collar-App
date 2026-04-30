@@ -65,6 +65,7 @@
 		3AFEAB822F962A8600634B10 /* UIButton+Animations.swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIButton+Animations.swift.swift"; sourceTree = "<group>"; };
 		3AFEAB842FA0973000634B10 /* APNTokenClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APNTokenClass.swift; sourceTree = "<group>"; };
 		3AFEAB882FA097F900634B10 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		3AFEAB8B2FA37FC800634B10 /* GPS Tracker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "GPS Tracker.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +116,7 @@
 		3A6A2A292EC1C24B00DA6E48 /* GPS Tracker */ = {
 			isa = PBXGroup;
 			children = (
+				3AFEAB8B2FA37FC800634B10 /* GPS Tracker.entitlements */,
 				3A6A2A2A2EC1C24B00DA6E48 /* AppDelegate.swift */,
 				3A6A2A2C2EC1C24B00DA6E48 /* SceneDelegate.swift */,
 				3A6A2A2E2EC1C24B00DA6E48 /* ViewController.swift */,
@@ -484,10 +486,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "GPS Tracker/GPS Tracker.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SJVNXKZRXK;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "GPS Tracker/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Find My Bitch";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app requires location to put you on the map in respect to your pet. ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -511,10 +517,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "GPS Tracker/GPS Tracker.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SJVNXKZRXK;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "GPS Tracker/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Find My Bitch";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app requires location to put you on the map in respect to your pet. ";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;

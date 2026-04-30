@@ -17,15 +17,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         UNUserNotificationCenter
             .current()
-            .requestAuthorization(
-                options: [.alert, .sound, .badge]) { granted, error in
-                    if let error {
-                                print("Notification permission error: \(error)")
-                                return
-                            }
-                            print(granted ? "Permission granted" : "Permission denied")
-                        }
+            .requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                if let error {
+                    print("Notification permission error: \(error)")
+                    return
+                }
+                print(granted ? "User Notification Permission granted" : "Permission denied")
+                
+                if granted {
+                    DispatchQueue.main.async {
+                        UIApplication.shared.registerForRemoteNotifications()
+                    }
+                }
+            }
         return true
+    }
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register: \(error)")
     }
 
     // MARK: UISceneSession Lifecycle
@@ -42,6 +50,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        print("got here")
         let token = deviceToken.map { String(format: "%02x", $0) }.joined()
         
         let lastToken = UserDefaults.standard.string(forKey: "apns_token")
@@ -51,6 +60,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         APNTokenClass.shared.add(token: token) { success in
             print(success ? "Token saved" : "Token save failed")
         }
+        
     }
 }
 

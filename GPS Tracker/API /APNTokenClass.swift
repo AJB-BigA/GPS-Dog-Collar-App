@@ -31,19 +31,20 @@ class APNTokenClass {
         ]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-        URLSession.shared.dataTask(with: request) { data, _, error in
+        URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("Error \(error)")
+                print("Token registration error: \(error)")
                 completion(false)
                 return
             }
-            if let data = data,
-               let _ = try? JSONDecoder().decode(APNIn.self, from: data) {
-                DispatchQueue.main.async {
-                    completion(true)
-                }
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Token registration status: \(httpResponse.statusCode)")
+                completion(httpResponse.statusCode == 200)
+                return
             }
+            completion(false)
         }.resume()
+        
     }
 }
 
