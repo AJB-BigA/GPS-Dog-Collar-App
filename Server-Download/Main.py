@@ -80,6 +80,8 @@ class APNIn(BaseModel):
     device_id : str
     token: str
 
+class IdBasedNotification(BaseModel):
+    device_id : str
 # ---------- FASTAPI ----------
 app = FastAPI(title="GPS Dog Collar API")
 
@@ -112,9 +114,11 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
     # Check all fences associated with this device
     device = db.query(APNHolder).all()
     fences = db.query(GeoFence).all()
+    
 
     for fence in fences:
-        is_inside_now = is_inside_fence(loc.lat, loc.lng, fence.coordinates)
+        
+        is_inside_now = is_inside_fence(loc.lat, loc.lng, fence.points)
 
         state = db.query(DeviceFenceState).filter_by(
             device_id=loc.device_id,
@@ -125,7 +129,7 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
             db.add(DeviceFenceState(device_id=loc.device_id, fence_id=fence.id, inside=is_inside_now))
         elif state.inside and not is_inside_now:
             for apn in device:
-                PushNotification.sendNotification(apn.token, fence.name, loc.device_id)
+                PushNotification.send_notification(apn.token, fence.name, loc.device_id)
         if state:
             state.inside = is_inside_now
 
@@ -139,6 +143,15 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
         timestamp=db_obj.timestamp,
         status=db_obj.status
     )
+
+@app.post("/api/lostWifi")
+def wifi_lost_notification(incoming_id : IdBasedNotification, db=Depends(get_db)):
+    """Recives when the dog leaves wifi for the first time"""
+    collar_warning = incoming_id.id
+    devices = db.query(APNHolder).all()
+
+    for device in devices:
+        PushNotification.send_warning(device.token, collar_warning)
 
 @app.post("/api/geo_fence/new-fence/", response_model = GeoFenceOut)
 def add_new_fence(fence: GeoFenceIn, db=Depends(get_db)):
@@ -228,17 +241,17 @@ def delete_geo_fence(fence_id: int, db=Depends(get_db)):
 
 
 #other functions V-----------------------------------------------------V
-def is_inside_fence(lat: float, lon: float, polygon: list[dict]) -> bool:
-    """Returns if the cords are inside a fence"""
+def is_inside_fence(lat, lng, polygon):
+    """Returns true if the point is inside a fence"""
+
     n = len(polygon)
     inside = False
     j = n - 1
     for i in range(n):
-        xi, yi = polygon[i]["lon"], polygon[i]["lat"]
-        xj, yj = polygon[j]["lon"], polygon[j]["lat"]
-        if ((yi > lat) != (yj > lat)) and (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi):
+        xi, yi = polygon[i][1], polygon[i][0]  # lng, lat
+        xj, yj = polygon[j][1], polygon[j][0]  # lng, lat
+        if ((yi > lng) != (yj > lng)) and (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi):
             inside = not inside
         j = i
     return inside
-
 

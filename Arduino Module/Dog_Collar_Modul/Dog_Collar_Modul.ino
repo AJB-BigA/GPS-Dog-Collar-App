@@ -27,6 +27,7 @@ HttpClient simClient(client, server, port);
 bool modemStatus = false;
 bool satLoc = false;
 bool safeCords = false; 
+bool firstTime = true;
 
 
 String sendAT(const char *cmd, unsigned long waitMs = 2000){
@@ -91,7 +92,7 @@ void toggleModem(bool ON, int maxRetries = 5) {
     }
   } else {
     if(modem.testAT(5000)) {
-      Serial.println("===turning off modem===");
+       Serial.println("===turning off modem=== Retries left: " + String(maxRetries));
       pulseModem();
       toggleModem(false, maxRetries - 1);
     } else {
@@ -102,18 +103,17 @@ void toggleModem(bool ON, int maxRetries = 5) {
   }
 }
 
-//checks to see if the wifi is connected
+//checks to see if the wifi is connected 
+//gives a 10 seconds window to try and reconnect
 bool connectToWifi(){
     if (WiFi.status() != WL_CONNECTED){
-      WiFi.begin(ssid, password);
-      delay(10000);
+
     }
     return(WiFi.status() == WL_CONNECTED);
 }
 
 //runs the protocall for connecting to the cell tower
 void connectToTower(){
-  modem.restart();
   modem.waitForNetwork();
   modem.gprsConnect("simbase");
   while(!modem.isGprsConnected()){
@@ -150,7 +150,6 @@ void setup() {
   while(Serial1.available()) {
     Serial.write(Serial1.read());
   }
-  Serial.println("--- raw test done");
   toggleModem(true);
 }
 
@@ -159,13 +158,14 @@ unsigned long heartbeat = 0;
 int i = 0;
 String gpsOutput = "";
 void loop() {
-  if(connectToWifi()){
+  //checks if the moemd is connected to wifi, if yes it heartbeats evey 5 mins
+  if(WiFi.status() == WL_CONNECTED){
     //checks if the modem is on and turns it off
     if(modemStatus){
       toggleModem(false);
     }
     //every 5 mins turn the modem on and send the battery %
-    if (millis() - heartbeat > 100000) {
+    if (millis() - heartbeat > 300000) {
       toggleModem(true);
       delay(2000);
       String bPercentage = getBatteryPercentage();
@@ -174,15 +174,27 @@ void loop() {
       sendPacket(payload, wifiClient);
       heartbeat = millis();
     }
+    firstTime = true;
+  //if not connected to wifi turns on the
   }else{
+    //send notification to inform wifi connection has been lost
+    //Makes sure modem is on 
+    //makes sure the gps is off
+    //connects to tower
+    //them sends the signal
+      if(firstTime){
+        Serial.println("Disconected From WiFi Trying to send. notfication");
+        toggleModem(true);
+        sendAT("AT+CGNSPWR=0");
+        connectToTower();
+        wifiLost(wifiClient);
+        firstTime = false;
+    }
       //checks if the modem is on and turns it on if its not
       if(!modemStatus){
         toggleModem(true);
         delay(3000);
       }
-      //send notification to inform wifi connection has been lost
-
-      wifiLost()
       //every 5 seconds gets a new satilight number
       if (millis() - lastGNSS > 5000) {
         sendAT("AT+CGNSPWR=1"); 
@@ -207,8 +219,6 @@ void loop() {
         //turn off the gps
         sendAT("AT+CGNSPWR=0");
 
-        //BUG AlERT THE SIM MAY NOT ME ON
-        //turn the sim card on
         connectToTower();
         sendPacket(payload, simClient);
         sendAT("AT+CGNSPWR=1");
@@ -218,4 +228,15 @@ void loop() {
       satLoc = false; 
       safeCords = false; 
     }
+}
+
+
+// Core 2 - wifi reconnection
+void setup1() { }
+void loop1() {
+    if (WiFi.status() != WL_CONNECTED){
+        WiFi.begin(ssid, password);
+        delay(10000);
+    }
+    delay(1000);
 }

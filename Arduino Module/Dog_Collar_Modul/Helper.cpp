@@ -107,8 +107,7 @@ void sendPacket(const String& payload, HttpClient& client){
     // Drain the response or the next call may misbehave
     int statusCode = client.responseStatusCode();
     client.skipResponseHeaders();
-    // optionally: client.responseBody() if you care about the body
-    client.stop(); // if you want a clean close each time
+    client.stop(); 
 }
 
 /* 
@@ -130,6 +129,24 @@ String formatBattery(String& s){
 }
 
 
-void wifiLost(){
+void wifiLost(HttpClient& client){
+    String path = "/api/lostWifi";
+    String payload = "{";
+    payload += "\"device_id\":\"Nala\"";
+    payload += "}";
+    client.beginRequest();
+    client.post(path);
+    client.sendHeader("Content-Type", "application/json");
+    client.sendHeader("Content-Length", payload.length());
+    client.beginBody();
+    client.print(payload);
+    client.print(payload);
+    client.endRequest();
+
+    // Drain the response or the next call may misbehave
+    int statusCode = client.responseStatusCode();
+    Serial.println("lostWifi status: " + String(statusCode));
+    client.skipResponseHeaders();
+    client.stop(); 
   
 }
