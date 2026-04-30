@@ -128,3 +128,8 @@ String formatBattery(String& s){
     }
     return battery;
 }
+
+
+void wifiLost(){
+  
+}

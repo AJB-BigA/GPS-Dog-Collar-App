@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional , List, Tuple
-from sqlalchemy import create_engine, Column, Integer, String, Float, func,select, Boolean, JSON
+from sqlalchemy import create_engine, Column, Integer, String, Float, func,select, Boolean, JSON, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base
 from fastapi import Depends
 import PushNotification
@@ -32,13 +32,11 @@ class GeoFence(Base):
     name = Column(String, index=True)
     points = Column(JSON, nullable=False)
 
-Base.metadata.create_all(bind=engine)
-
 class DeviceFenceState(Base):
     __tablename__ = "device_fence_state"
 
-    device_id = Column(Integer, ForeignKey("devices.id"), primary_key=True)
-    fence_id  = Column(Integer, ForeignKey("fences.id"), primary_key=True)
+    device_id = Column(String, primary_key=True)    
+    fence_id  = Column(Integer, ForeignKey("geo_fence.id"), primary_key=True)
     inside    = Column(Boolean, default=True)
 
 class APNHolder(Base):
@@ -48,7 +46,8 @@ class APNHolder(Base):
     device_id = Column(String, unique=True, index=True) 
     token = Column(String, nullable = False)
 
-
+#make sure this is called after the classes
+Base.metadata.create_all(bind=engine)
 
 # ---------- API MODELS ----------
 class LocationIn(BaseModel):
@@ -112,7 +111,7 @@ def add_location(loc: LocationIn, db=Depends(get_db)):
 
     # Check all fences associated with this device
     device = db.query(APNHolder).all()
-    fences = db.query(GeoFence).filter_by(device_id=loc.device_id).all()
+    fences = db.query(GeoFence).all()
 
     for fence in fences:
         is_inside_now = is_inside_fence(loc.lat, loc.lng, fence.coordinates)

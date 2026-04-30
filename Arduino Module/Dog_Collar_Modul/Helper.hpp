@@ -23,5 +23,6 @@ bool checkIfSatLock(const String& s);
 String createPayload(const String& lat, const String& lng, const String& bat, bool status);
 void sendPacket(const String& payload, HttpClient& client);
 String formatBattery(String&);
+void wifiLost();
 
 #endif /* Helper_hpp */

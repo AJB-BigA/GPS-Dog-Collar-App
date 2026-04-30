@@ -1,14 +1,15 @@
 import httpx
 import jwt
 import time 
+import os
+from dotenv import load_dotenv
 
-TEAM_ID = "Team_Name"
-KEY_ID = "Key_Id"
-BUNDLE_ID = "com.yourapp.249dogs" # your app's bundle ID
-APNS_KEY = """-----BEGIN PRIVATE KEY-----
-YOUR_P8_KEY_CONTENTS_HERE
------END PRIVATE KEY-----"""
+load_dotenv()
 
+TEAM_ID = os.getenv("APNS_KEY_ID")
+KEY_ID = os.getenv("APNS_TEAM_ID")
+BUNDLE_ID = os.getenv("BUNDLE_ID_APP")
+APNS_KEY = os.getenv("APNS_AUTH_KEY_PATH")
 
 def sendNotification(token: str, fence_name: str, id: str):
     """sends notification to devices"""

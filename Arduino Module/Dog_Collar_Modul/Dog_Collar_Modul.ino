@@ -64,40 +64,36 @@ String sendAT(const char *cmd, unsigned long waitMs = 2000){
 
 //pusles the modem to turn it on or off
 void pulseModem(){
-  pinMode(17, OUTPUT);
-  digitalWrite(17, HIGH);
+  pinMode(14, OUTPUT);
+  digitalWrite(14, HIGH);
   delay(1500);
-  digitalWrite(17,LOW);
-  delay(5000);
-  Serial.println("Pusled Modem");
+  digitalWrite(14,LOW);
+  delay(10000);
 }
 
 //this function will toggle the modem on and off
 void toggleModem(bool ON, int maxRetries = 5) {
-  
   if(maxRetries <= 0) {
     Serial.println("ERROR: Max retries reached, modem not responding");
     modemStatus = false;
     return;
   }
-  String status = sendAT("AT");
-  
-  
+
   if(ON) {
-    if(status.indexOf("OK") >= 0) {
+    if(modem.testAT(5000)) {
       modemStatus = true;
       Serial.println("Modem is ON");
       return;
     } else {
       Serial.println("===turning on modem=== Retries left: " + String(maxRetries));
       pulseModem();
-      toggleModem(true, maxRetries - 1);  // Decrement retries
+      toggleModem(true, maxRetries - 1);
     }
   } else {
-    if(status.indexOf("OK") >= 0) {
+    if(modem.testAT(5000)) {
       Serial.println("===turning off modem===");
       pulseModem();
-      toggleModem(false, maxRetries - 1);  // Decrement retries
+      toggleModem(false, maxRetries - 1);
     } else {
       modemStatus = false;
       Serial.println("Modem is OFF");
@@ -140,14 +136,22 @@ String getBatteryPercentage(){
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  delay(2000);
+  delay(3000);
 
   //turn on the serial output
   Serial1.setRX(1);
   Serial1.setTX(0);
-  Serial1.begin(115200);
 
+  Serial1.begin(115200);
   delay(1000);
+ 
+ Serial1.print("AT\r\n");
+  delay(2000);
+  while(Serial1.available()) {
+    Serial.write(Serial1.read());
+  }
+  Serial.println("--- raw test done");
+  toggleModem(true);
 }
 
 unsigned long lastGNSS = 0;
@@ -161,7 +165,7 @@ void loop() {
       toggleModem(false);
     }
     //every 5 mins turn the modem on and send the battery %
-    if (millis() - heartbeat > 300000) {
+    if (millis() - heartbeat > 100000) {
       toggleModem(true);
       delay(2000);
       String bPercentage = getBatteryPercentage();
@@ -176,6 +180,9 @@ void loop() {
         toggleModem(true);
         delay(3000);
       }
+      //send notification to inform wifi connection has been lost
+
+      wifiLost()
       //every 5 seconds gets a new satilight number
       if (millis() - lastGNSS > 5000) {
         sendAT("AT+CGNSPWR=1"); 

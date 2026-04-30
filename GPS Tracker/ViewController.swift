@@ -130,8 +130,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         collectionView.dataSource = self
         
         // Poll the API every 45 seconds to keep collar locations fresh
-        timer = Timer.scheduledTimer(withTimeInterval: 45.0, repeats: true){[weak self] _ in
-            self?.updateTimer()
+        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true){[weak self] _ in
+            self?.updateData()
+            self?.collectionView.reloadData()
         }
         
         
@@ -142,12 +143,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     }
     
     // MARK: - Data Refresh
-    
-    /// Called by the repeating timer — refreshes collar location data and reloads the collection view.
-    func updateTimer(){
-        self.updateData()
-        self.collectionView.reloadData()
-    }
     
     // MARK: - Geofence Drawing
     

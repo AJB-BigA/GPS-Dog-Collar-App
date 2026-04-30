@@ -1,1 +1,3 @@
 secrets.h
+.env
+*.p8
