@@ -2,29 +2,27 @@
 name = "gps-server"
 version = "0.1.0"
 description = "FastAPI GPS server for device tracking and geofencing"
-authors = ["Your Name <you@example.com>"]
+authors = ["Austin Baker <a.j.baker249@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-
 fastapi = "^0.111.0"
-uvicorn = "^0.30.0"
+uvicorn = { version = "^0.30.0", extras = ["standard"] }
 sqlalchemy = "^2.0.0"
 pydantic = "^2.7.0"
-pydantic-settings = "^2.2.0"
-typing-extensions = "^4.10.0"  # for python <3.11
 python-dotenv = "^1.0.1"
-
-# Optional but recommended (C extensions speed up SQLite/SQLAlchemy)
-aiosqlite = "^0.19.0"
+httpx = { version = "^0.28.0", extras = ["http2"] }
+PyJWT = { version = "^2.8.0", extras = ["cryptography"] }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
 black = "^24.4.0"
 isort = "^5.13.0"
 
+[tool.pytest.ini_options]
+testpaths = ["test_main.py"]
+
 [build-system]
 requires = ["poetry-core"]
-build-backend = "poetry-core.masonry.api"
+build-backend = "poetry.core.masonry.api"

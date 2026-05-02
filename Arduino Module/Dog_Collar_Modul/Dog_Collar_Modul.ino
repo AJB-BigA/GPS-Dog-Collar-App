@@ -167,7 +167,7 @@ void loop() {
       toggleModem(false);
     }
     //every 5 mins turn the modem on and send the battery %
-    if (millis() - heartbeat > 300000) {
+    if (millis() - heartbeat > 1000000) {
       toggleModem(true);
       delay(2000);
       String bPercentage = getBatteryPercentage();

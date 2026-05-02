@@ -14,7 +14,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Kick off both data loads in parallel at startup so the UI has
     // geofence boundaries and dog locations ready as soon as possible.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
+        UserDefaults.standard.removeObject(forKey: "apns_token")
+        UIApplication.shared.registerForRemoteNotifications()
         UNUserNotificationCenter
             .current()
             .requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -50,7 +51,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        print("got here")
         let token = deviceToken.map { String(format: "%02x", $0) }.joined()
         
         let lastToken = UserDefaults.standard.string(forKey: "apns_token")
