@@ -14,8 +14,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Kick off both data loads in parallel at startup so the UI has
     // geofence boundaries and dog locations ready as soon as possible.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        UserDefaults.standard.removeObject(forKey: "apns_token")
-        UIApplication.shared.registerForRemoteNotifications()
         UNUserNotificationCenter
             .current()
             .requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -55,10 +53,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let lastToken = UserDefaults.standard.string(forKey: "apns_token")
         guard token != lastToken else { return } // no change, skip
-        
+        print(token)
         UserDefaults.standard.set(token, forKey: "apns_token")
         APNTokenClass.shared.add(token: token) { success in
             print(success ? "Token saved" : "Token save failed")
+     
         }
         
     }

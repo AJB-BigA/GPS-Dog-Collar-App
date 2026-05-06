@@ -19,7 +19,7 @@ with open(APNS_KEY_PATH, "r", encoding="utf-8") as f:
 def send_notification(token: str, fence_name: str, id: str):
     """sends notification to devices"""
     auth_token = jwt.encode(
-        payload = {"iss" : TEAM_ID, "iat" : time.time()},
+         {"iss" : TEAM_ID, "iat" : int(time.time())},
         key = APNS_KEY, 
         algorithm="ES256",
         headers = {"kid" : KEY_ID}
@@ -48,14 +48,14 @@ def send_notification(token: str, fence_name: str, id: str):
 
 def send_warning(token: str, collar_id:str):
     """Sends the notification to the devices"""
-
+    print("Tokens from send warning : ",token, "\n")
     auth_token = jwt.encode(
-    {"iss" : TEAM_ID, "iat" : time.time()},
+    {"iss" : TEAM_ID, "iat" : int(time.time())},
     key = APNS_KEY,
     algorithm="ES256",
     headers = {"kid" : KEY_ID}
     )
-    url = f"https://api.push.apple.com/3/device/{token}"
+    url = f"https://api.development.push.apple.com/3/device/{token}"
 
     headers = { "authorization" : f"bearer {auth_token}",
     "apns-topic": BUNDLE_ID,
@@ -70,6 +70,7 @@ def send_warning(token: str, collar_id:str):
             "sound": "default"
         }
     }
+
     with httpx.Client(http2 = True) as client:
         response = client.post(url, json=payload, headers=headers)
         print(response.status_code)

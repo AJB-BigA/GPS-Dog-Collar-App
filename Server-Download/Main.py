@@ -175,7 +175,7 @@ def add_new_fence(fence: GeoFenceIn, db=Depends(get_db)):
 def store_apn_value(apn : APNIn, db=Depends(get_db)):
     """Stores the data for the apn numbers"""
     db_object = db.query(APNHolder).filter(APNHolder.device_id == apn.device_id).first()
-
+    print(apn.token)
     if db_object:
         db_object.token = apn.token  # update existing
     else:
@@ -251,4 +251,3 @@ def is_inside_fence(lat, lng, polygon):
             inside = not inside
         j = i
     return inside
-

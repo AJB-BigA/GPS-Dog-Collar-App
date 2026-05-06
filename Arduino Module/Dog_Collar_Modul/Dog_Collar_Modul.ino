@@ -180,6 +180,7 @@ void loop() {
       heartbeat = millis();
     }
     firstTime = true;
+    if(firstTime)
   //if not connected to wifi turns on the
   }else{
     //send notification to inform wifi connection has been lost
@@ -242,6 +243,7 @@ void setup1() {
 }
 void loop1() {
     if (WiFi.status() != WL_CONNECTED){
+      Serial.print("((((((((<<<<<---------Connected to wifi--------->>>>>>))))))))))")
         WiFi.begin(ssid, password);
         delay(10000);
     }
