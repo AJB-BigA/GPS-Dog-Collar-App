@@ -2,3 +2,5 @@ secrets.h
 .env
 *.p8
 .history/
+*.lck
+*-backups/
